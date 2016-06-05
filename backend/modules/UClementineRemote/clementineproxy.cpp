@@ -3,7 +3,9 @@
 
 ClementineProxy::ClementineProxy(QObject *parent) :
     QObject(parent),
-    m_message("")
+    m_currentSong(NULL),
+    m_message(""),
+    m_playListsItem(NULL)
 {
     connect(&m_clientSocket, SIGNAL(connected()), this, SLOT(onConnected()), Qt::DirectConnection);
     connect(&m_clientSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)), Qt::DirectConnection);
@@ -17,18 +19,54 @@ ClementineProxy::~ClementineProxy()
 {
     if(m_clientSocket.isOpen())
         m_clientSocket.close();
+
+    if(m_currentSong)
+        delete m_currentSong;
 }
 
 void ClementineProxy::connectRemote()
 {
     m_clientSocket.connectToHost("192.168.1.11", 5500);
 
-    emit connectionStatusChanged("Connecting ...");
+    emit connectionStatusChanged(Connecting);
+}
+
+void ClementineProxy::playNext()
+{
+    play(true);
+}
+
+void ClementineProxy::playPrev()
+{
+    play(false);
+}
+
+void ClementineProxy::play(bool playNext)
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(playNext ? pb::remote::NEXT : pb::remote::PREVIOUS );
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        QString dataString;
+        for(int i = 0; i < msgSize; i++)
+            dataString.append(QString::number(msgData[i]) + " ");
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+    }
 }
 
 void ClementineProxy::onConnected()
 {
-    emit connectionStatusChanged("Connected");
+    emit connectionStatusChanged(Connected);
 
     if(m_clientSocket.isOpen())
     {
@@ -41,18 +79,13 @@ void ClementineProxy::onConnected()
         reqConnect->set_send_playlist_songs(true);
         msg.set_allocated_request_connect(reqConnect);
 
-        emit connectionStatusChanged(msg.DebugString().c_str());
-
         uint32_t msgSize = msg.ByteSize();
         uint8_t msgData[msgSize];
-        if(!msg.SerializeToArray(msgData, msgSize))
-            emit connectionStatusChanged("err");
+        msg.SerializeToArray(msgData, msgSize);
 
         QString dataString;
         for(int i = 0; i < msgSize; i++)
             dataString.append(QString::number(msgData[i]) + " ");
-
-        emit connectionStatusChanged(dataString);
 
         uint32_t beSize = qToBigEndian(msgSize);
         m_clientSocket.write((const char*)&beSize, 4);
@@ -63,7 +96,7 @@ void ClementineProxy::onConnected()
 
 void ClementineProxy::error(QAbstractSocket::SocketError socketError)
 {
-    emit connectionStatusChanged("Socket error: " + QString::number(socketError));
+    emit connectionStatusChanged(ConnectionError);
 }
 
 void ClementineProxy::readyRead()
@@ -93,14 +126,19 @@ void ClementineProxy::readyRead()
                 processMessage(msg);
             }
             else
-                qDebug() << "ERRRRRRRRRRRRRRRR";
+            {
+                // We cant recover from a protocol error
+                m_clientSocket.close();
+
+                emit connectionStatusChanged(Disconnected);
+            }
         }
     }
 }
 
 void ClementineProxy::processMessage(pb::remote::Message message)
 {
-    qDebug() << message.DebugString().c_str();
+    //qDebug() << message.DebugString().c_str();
 
     if(message.version() != pb::remote::Message::default_instance().version())
         emit communicationError("Invalid version player version!");
@@ -117,7 +155,7 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
         case pb::remote::UPDATE_TRACK_POSITION:
             qDebug() << "New message: UPDATE_TRACK_POSITION";
-            //parseUpdateTrackPosition(msg.getResponseUpdateTrackPosition());
+            processResponseUpdateTrackPosition(message.response_update_track_position());
             break;
         case pb::remote::KEEP_ALIVE:
             qDebug() << "New message: KEEP_ALIVE";
@@ -141,6 +179,8 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
         case pb::remote::DISCONNECT:
             qDebug() << "New message: DISCONNECT";
+            m_clientSocket.close();
+            emit connectionStatusChanged(Disconnected);
             break;
         case pb::remote::PLAYLISTS:
             qDebug() << "New message: PLAYLISTS";
@@ -148,11 +188,11 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
         case pb::remote::PLAYLIST_SONGS:
             qDebug() << "New message: PLAYLIST_SONGS";
-            //parsePlaylistSongs(msg.getResponsePlaylistSongs());
+            processResponsePlaylistSongs(message.response_playlist_songs());
             break;
         case pb::remote::ACTIVE_PLAYLIST_CHANGED:
             qDebug() << "New message: ACTIVE_PLAYLIST_CHANGED";
-            //parseActivePlaylistChanged(msg.getResponseActiveChanged());
+            processResponseActiveChanged(message.response_active_changed());
             break;
         case pb::remote::REPEAT:
             qDebug() << "New message: REPEAT";
@@ -185,17 +225,61 @@ void ClementineProxy::processResponseClementineInfo(pb::remote::ResponseClementi
 
 void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata)
 {
+    if(m_currentSong)
+        delete m_currentSong;
+
+    m_currentSong = new Song(currentMetadata.song_metadata());
+
+    emit activeSongChanged(m_currentSong);
 }
+
 void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists playLists)
 {
-    m_playLists.clear();
+    if(!m_playListsItem)
+        return;
+
+    // First clear the existing play list
+    emit m_playListsItem->clearPlaylists();
 
     for(int i = 0; i < playLists.playlist_size(); i++)
     {
-        m_playLists.append(&playLists.playlist(i));
+        m_playListsItem->addPlayList(playLists.playlist(i));
     }
 
     qDebug() << "update playlists";
+}
 
-    emit updatePlaylists(m_playLists);
+void ClementineProxy::processResponsePlaylistSongs(pb::remote::ResponsePlaylistSongs playListSongs)
+{
+    if(!m_playListsItem)
+        return;
+
+    PlayList* pl = m_playListsItem->getPlayList(playListSongs.requested_playlist().id());
+
+    // TODO: is this a real use case? ... add the list maybe
+    if(pl == NULL)
+        return;
+
+    // Add the songs to the specified playlist
+    for(int i = 0; i < playListSongs.songs_size(); i++)
+    {
+        pl->addSong(playListSongs.songs(i));
+    }
+
+    if(pl->isActive())
+        emit m_playListsItem->playListSongs(pl);
+}
+
+void ClementineProxy::processResponseActiveChanged(pb::remote::ResponseActiveChanged activePlaylistChanged)
+{
+    if(!m_playListsItem)
+        return;
+
+    m_playListsItem->serverSetActivePlayList(activePlaylistChanged.id());
+}
+
+void ClementineProxy::processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition)
+{
+    qDebug() << updateTrackPosition.position();
+    emit updateSongPosition(updateTrackPosition.position());
 }

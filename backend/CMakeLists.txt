@@ -13,7 +13,9 @@ set(
     UClementineRemotebackend_SRCS
     modules/UClementineRemote/backend.cpp
     modules/UClementineRemote/clementineproxy.cpp
+    modules/UClementineRemote/playlists.cpp
     modules/UClementineRemote/playlist.cpp
+    modules/UClementineRemote/song.cpp
     ${PROTO_SRCS}
     ${PROTO_HDRS}
 )
