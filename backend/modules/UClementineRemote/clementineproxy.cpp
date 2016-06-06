@@ -40,6 +40,48 @@ void ClementineProxy::playPrev()
 {
     play(false);
 }
+void ClementineProxy::playSong(int songIndex, int playListId)
+{
+    qDebug() << "Song index:" << songIndex << ", playlist id: " << playListId;
+
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::CHANGE_SONG);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        pb::remote::RequestChangeSong* reqChangeSong = new pb::remote::RequestChangeSong();
+        reqChangeSong->set_playlist_id(playListId);
+        reqChangeSong->set_song_index(songIndex);
+        msg.set_allocated_request_change_song(reqChangeSong);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        QString dataString;
+        for(int i = 0; i < msgSize; i++)
+            dataString.append(QString::number(msgData[i]) + " ");
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+
+        // If this playlist is loaded signal the remote to change to this play list
+        if(!m_playListsItem)
+            return;
+
+        PlayList* playList = m_playListsItem->getPlayList(playListId);
+
+        if(!playList)
+            return;
+
+        if(playList->isLoaded())
+            emit m_playListsItem->activePlayListChanged(playList);
+
+    }
+}
 
 void ClementineProxy::play(bool playNext)
 {

@@ -23,6 +23,7 @@ public slots:
     void connectRemote(QString host, int port);
     void playNext();
     void playPrev();
+    void playSong(int songIndex, int playListId);
 
 private slots:
     void onConnected();
@@ -80,7 +81,7 @@ protected:
     QByteArray readBuffer;
 
     PlayLists* m_playListsItem;
-    QList< QSharedPointer<PlayList> > m_playLists;
+    //QList< QSharedPointer<PlayList> > m_playLists;
     QMutex m_socketReadLock;
 };
 

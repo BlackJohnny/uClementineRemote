@@ -1,4 +1,5 @@
 #include "song.h"
+#include <QDebug>
 
 Song::Song(QObject *parent) :
     QObject(parent)

@@ -27,7 +27,8 @@ MainView {
                     {
                         iconName: "contact"
                         text: "Connect"
-                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500)
+                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500)
+                        onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500)
                     },
                     Action
                     {
@@ -96,7 +97,7 @@ MainView {
             id: slideView
             z: 100
             sliderPosition: Qt.LeftEdge
-            menuVisible: true
+            menuVisible: false
             buttonVisible: false
 
             anchors {
@@ -143,6 +144,21 @@ MainView {
                 font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
             }
 
+            Component {
+                id: highlightPlayLists
+                Rectangle {
+                    width: 180; height: 140
+                    color: "lightsteelblue"; radius: 5
+                    y: listViewPlayLists.currentItem.y
+
+                    Behavior on y {
+                        SpringAnimation {
+                            spring: 3
+                            damping: 0.2
+                        }
+                    }
+                }
+            }
             ListView {
                 id: listViewPlayLists
                 anchors
@@ -151,20 +167,37 @@ MainView {
                     left: parent.left
                     right: parent.right
                     leftMargin: units.gu(2)
+                    rightMargin: units.gu(2)
                 }
-
+                highlight: highlightPlayLists
                 height: parent.height
                 model: listModelPlayLists
 
                 delegate: Item {
                     width: parent.width
                     height: label.height*1.5
-
+                    property int playListId: id
                     Text {
                         id: label
                         text: name
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
+                    }
+                    MouseArea {
+                        id: mouseArea
+                        z: 1
+                        hoverEnabled: false
+                        anchors.fill: parent
+                        onClicked:
+                        {
+                            if(listViewPlayLists.currentIndex == index)
+                            {
+                                return;
+                            }
+
+                            listViewPlayLists.currentIndex = index;
+                            clementineProxy.playSong(0, playListId);
+                        }
                     }
                 }
             }
@@ -180,14 +213,14 @@ MainView {
             id: playLists
             function setActivePlayList(playList)
             {
-                currentPlayList.clear();
+                currentPlayListModel.clear();
                 currentPlayListName.text = playList.name;
 
                 var songs = playList.songs();
 
                 for(var i = 0; i < songs.length; i++)
                 {
-                    currentPlayList.append({"name": songs[i].title});
+                    currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index, "plid": playList.id});
                 }
             }
             onNewPlayList:
@@ -227,6 +260,62 @@ MainView {
             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
         }
 
+        Component {
+            id: highlight
+            Rectangle {
+                width: 180; height: 140
+                color: "lightsteelblue"; radius: 5
+                y: listViewPlayList.currentItem.y
+
+                Behavior on y {
+                    SpringAnimation {
+                        spring: 3
+                        damping: 0.2
+                    }
+                }
+
+                ButtonSvg
+                {
+                    id: buttonPlay
+
+                    anchors
+                    {
+                        right: buttonDownload.left
+                        rightMargin: units.gu(1)
+                        verticalCenter: parent.verticalCenter
+                    }
+                    svg: "assets/play.svg"
+                    iconHeight: parent.height * 0.8
+                    iconWidth:  parent.height * 0.8
+                    z: 10
+                    onClicked:
+                    {
+                        clementineProxy.playSong(listViewPlayList.currentItem.songIndex, listViewPlayList.currentItem.playListId);
+                    }
+                }
+
+                ButtonSvg
+                {
+                    id: buttonDownload
+
+                    anchors
+                    {
+                        right: parent.right
+                        rightMargin: units.gu(1)
+                        verticalCenter: parent.verticalCenter
+                    }
+                    svg: "assets/download.svg"
+                    iconHeight: parent.height * 0.8
+                    iconWidth:  parent.height * 0.8
+                    z: 10
+                    onClicked:
+                    {
+                        clementineProxy.playNext();
+                    }
+                }
+            }
+        }
+
         ListView
         {
             id: listViewPlayList
@@ -239,13 +328,16 @@ MainView {
                 leftMargin: units.gu(2)
                 rightMargin: units.gu(2)
             }
-
-            model: currentPlayList
-
+            highlight: highlight
+            highlightFollowsCurrentItem: true
+            model: currentPlayListModel
+            focus: true
             delegate: Item {
                 width: parent.width
                 height: songName.height*1.5
-
+                property int songIndex: sindex
+                property int songId: id
+                property int playListId: plid
                 Text {
                     id: songName
                     text: name
@@ -253,12 +345,30 @@ MainView {
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
                 }
+                MouseArea {
+                    id: mouseArea
+                    z: 1
+                    hoverEnabled: false
+                    anchors.fill: parent
+                    propagateComposedEvents: true
+                    onClicked:
+                    {
+                        if(listViewPlayList.currentIndex == index)
+                        {
+                            mouse.accepted = false;
+                            return;
+                        }
+
+                        mouse.accepted = true;
+                        listViewPlayList.currentIndex = index;
+                    }
+                }
             }
         }
 
         ListModel
         {
-            id: currentPlayList
+            id: currentPlayListModel
         }
 
         CurrentSong

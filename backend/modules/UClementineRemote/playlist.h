@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QDebug>
 
 #include "song.h"
 
@@ -24,7 +25,9 @@ public:
 
 public:
     PlayList& operator=(const pb::remote::Playlist& playList);
-
+    bool isLoaded() {
+        qDebug() << "++++++++++++++++++++++++++" << m_songs.size();
+        return m_loaded; }
     void addSong(const pb::remote::SongMetadata& songData);
 
 public:
@@ -35,6 +38,7 @@ public:
 
 
 protected:
+    bool m_loaded;
     QString m_name;
     bool m_isActive;
     QList<Song*> m_songs;

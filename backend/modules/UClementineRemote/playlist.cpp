@@ -3,6 +3,7 @@
 
 PlayList::PlayList(QObject *parent) :
     QObject(parent),
+    m_loaded(false),
     m_isActive(false)
 {
 }
@@ -27,6 +28,8 @@ void PlayList::addSong(const pb::remote::SongMetadata& songData)
     Song* song = new Song(songData);
     song->setParent(parent());
     m_songs.append(song);
+
+    m_loaded = true;
 }
 
 QVariantList PlayList::songs()
@@ -38,6 +41,4 @@ QVariantList PlayList::songs()
         newList.append(QVariant::fromValue(*i));
 
     return newList;
-
-    //return toVariantList(m_songs);
 }
