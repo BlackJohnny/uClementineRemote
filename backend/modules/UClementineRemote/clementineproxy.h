@@ -15,12 +15,11 @@
 class ClementineProxy : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY( QString helloWorld READ helloWorld WRITE setHelloWorld NOTIFY helloWorldChanged )
     Q_PROPERTY( PlayLists* playLists WRITE setPlayListsItem )
     Q_PROPERTY( bool isConnected READ isConnected )
 
 public slots:
-    void connectRemote(QString host, int port);
+    void connectRemote(QString host, int port, int authCode);
     void playNext();
     void playPrev();
     void playSong(int songIndex, int playListId);
@@ -41,7 +40,7 @@ public:
 
     Q_ENUMS(ConnectionStatus)
 
-signals:
+Q_SIGNALS:
     void connectionStatusChanged(ConnectionStatus connectionStatus);
     void activeSongChanged(Song* song); // this event might happen when there is no play list loaded
     void updateSongPosition(int position);
@@ -53,11 +52,6 @@ public:
     explicit ClementineProxy(QObject *parent = 0);
     ~ClementineProxy();
 
-
-
-Q_SIGNALS:
-    void helloWorldChanged();
-
 protected:
     void processMessage(pb::remote::Message message);
     void processResponsePlaylists(pb::remote::ResponsePlaylists playLists);
@@ -68,8 +62,6 @@ protected:
     void processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata);
 
 protected:
-    QString helloWorld() { return m_message; }
-    void setHelloWorld(QString msg) { m_message = msg; Q_EMIT helloWorldChanged(); }
     void setPlayListsItem(PlayLists* playListsItem) { m_playListsItem = playListsItem; }
     bool isConnected() { return m_clientSocket.isOpen(); }
     void play(bool playNext);
@@ -83,6 +75,10 @@ protected:
     PlayLists* m_playListsItem;
     //QList< QSharedPointer<PlayList> > m_playLists;
     QMutex m_socketReadLock;
+
+    QString m_host;
+    int m_port;
+    int m_authCode;
 };
 
 #endif // CLEMENTINEPROXY_H

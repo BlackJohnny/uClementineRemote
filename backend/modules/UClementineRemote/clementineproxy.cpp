@@ -5,7 +5,9 @@ ClementineProxy::ClementineProxy(QObject *parent) :
     QObject(parent),
     m_currentSong(NULL),
     m_message(""),
-    m_playListsItem(NULL)
+    m_playListsItem(NULL),
+    m_port(0),
+    m_authCode(0)
 {
     connect(&m_clientSocket, SIGNAL(connected()), this, SLOT(onConnected()), Qt::DirectConnection);
     connect(&m_clientSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)), Qt::DirectConnection);
@@ -24,8 +26,12 @@ ClementineProxy::~ClementineProxy()
         delete m_currentSong;
 }
 
-void ClementineProxy::connectRemote(QString host, int port)
+void ClementineProxy::connectRemote(QString host, int port, int authCode)
 {
+    m_host = host;
+    m_port = port;
+    m_authCode = authCode;
+
     m_clientSocket.connectToHost(host, port);
 
     emit connectionStatusChanged(Connecting);
@@ -74,7 +80,7 @@ void ClementineProxy::playSong(int songIndex, int playListId)
 
         PlayList* playList = m_playListsItem->getPlayList(playListId);
 
-        if(!playList)
+        if(!playList || playList->isActive())
             return;
 
         if(playList->isLoaded())
@@ -108,6 +114,8 @@ void ClementineProxy::play(bool playNext)
 
 void ClementineProxy::onConnected()
 {
+    qDebug() << "Connected";
+
     emit connectionStatusChanged(Connected);
 
     if(m_clientSocket.isOpen())
@@ -117,7 +125,7 @@ void ClementineProxy::onConnected()
         msg.set_version(pb::remote::Message::default_instance().version());
 
         pb::remote::RequestConnect* reqConnect = new pb::remote::RequestConnect();
-        reqConnect->set_auth_code(0);
+        reqConnect->set_auth_code(m_authCode);
         reqConnect->set_send_playlist_songs(true);
         msg.set_allocated_request_connect(reqConnect);
 
@@ -256,7 +264,7 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
 
         default:
-            qDebug() << "New message: Unknown message type";
+            qDebug() << "New message: Unknown message type" << message.type();
             break;
     }
 }

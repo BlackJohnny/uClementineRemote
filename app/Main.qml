@@ -21,14 +21,15 @@ MainView {
             PageHeader
             {
                 id: pageHeader
-                title: i18n.tr("uClementineRemote")
+                title: "uClementineRemote"
                 leadingActionBar.actions: [
                     Action
                     {
                         iconName: "contact"
                         text: "Connect"
-                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500)
-                        onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500)
+                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action
                     {
@@ -152,10 +153,12 @@ MainView {
                     y: listViewPlayLists.currentItem.y
 
                     Behavior on y {
+                        NumberAnimation { duration: 400; easing.type: Easing.OutQuad; }
+                        /*
                         SpringAnimation {
                             spring: 3
                             damping: 0.2
-                        }
+                        }*/
                     }
                 }
             }
@@ -262,9 +265,17 @@ MainView {
 
         Component {
             id: highlight
+
             Rectangle {
-                width: 180; height: 140
-                color: "lightsteelblue"; radius: 5
+                width: listViewPlayList.currentItem.width;
+                height: listViewPlayList.currentItem.height
+
+                color: "transparent";
+                border.color: UbuntuColors.orange
+                border.width: 2
+                radius: 5
+
+                z:10
                 y: listViewPlayList.currentItem.y
 
                 Behavior on y {
@@ -329,11 +340,15 @@ MainView {
                 rightMargin: units.gu(2)
             }
             highlight: highlight
-            highlightFollowsCurrentItem: true
+            highlightFollowsCurrentItem: false
             model: currentPlayListModel
             focus: true
             delegate: Item {
-                width: parent.width
+                anchors
+                {
+                    left: parent.left
+                    right: parent.right
+                }
                 height: songName.height*1.5
                 property int songIndex: sindex
                 property int songId: id
@@ -341,13 +356,18 @@ MainView {
                 Text {
                     id: songName
                     text: name
-                    width: parent.width
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors
+                    {
+                        left: parent.left
+                        right: parent.right
+                        leftMargin: units.gu(1)
+                        verticalCenter: parent.verticalCenter
+                    }
+                    elide: Text.ElideMiddle
                     font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
                 }
                 MouseArea {
-                    id: mouseArea
-                    z: 1
+                    id: mouseAreaPlayListItem
                     hoverEnabled: false
                     anchors.fill: parent
                     propagateComposedEvents: true
@@ -355,11 +375,11 @@ MainView {
                     {
                         if(listViewPlayList.currentIndex == index)
                         {
-                            mouse.accepted = false;
+                            //mouse.accepted = false;
                             return;
                         }
 
-                        mouse.accepted = true;
+                       // mouse.accepted = true;
                         listViewPlayList.currentIndex = index;
                     }
                 }

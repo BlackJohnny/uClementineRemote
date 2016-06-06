@@ -52,7 +52,7 @@ Rectangle {
         Rectangle
         {
             id: songProgress
-            color: "#33ccff"
+            color: UbuntuColors.orange
             anchors
             {
                 left: parent.left
@@ -107,7 +107,7 @@ Rectangle {
                 leftMargin: units.gu(1)
                 rightMargin: units.gu(1)
             }
-
+            elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
         }
