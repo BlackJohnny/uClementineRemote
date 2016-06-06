@@ -77,7 +77,7 @@ Item {
 
         By default this is set to \c true.
     */
-    property bool buttonVisible: true
+    property alias buttonVisible: menuButton.visible
 
     property int _radius: Screen.pixelDensity * 3
 

@@ -20,7 +20,7 @@ class ClementineProxy : public QObject
     Q_PROPERTY( bool isConnected READ isConnected )
 
 public slots:
-    void connectRemote();
+    void connectRemote(QString host, int port);
     void playNext();
     void playPrev();
 

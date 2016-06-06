@@ -23,23 +23,42 @@ MainView {
                 id: pageHeader
                 title: i18n.tr("uClementineRemote")
                 leadingActionBar.actions: [
-                    Action {
+                    Action
+                    {
                         iconName: "contact"
                         text: "Connect"
-                        onTriggered: clementineProxy.connectRemote()
+                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500)
                     },
-                    Action {
+                    Action
+                    {
+                        iconName: "quit"
+                        text: "Play lists"
+                        onTriggered:
+                        {
+                            slideView.z = 100;
+                            slideView.showMenu();
+                        }
+                    },
+                    Action
+                    {
                         iconName: "quit"
                         text: "Quit"
                     }
                 ]
                 trailingActionBar.actions: [
-                    Action {
+                    Action
+                    {
                         iconName: "settings"
                         text: "First"
                     },
-                    Action {
+                    Action
+                    {
                         iconName: "info"
+                        text: "Second"
+                    },
+                    Action
+                    {
+                        iconName: "search"
                         text: "Second"
                     }
                 ]
@@ -78,6 +97,7 @@ MainView {
             z: 100
             sliderPosition: Qt.LeftEdge
             menuVisible: true
+            buttonVisible: false
 
             anchors {
                 left: parent.left
@@ -89,7 +109,7 @@ MainView {
             backgroundOpacity: 1.0
 
             autoHideMenu: false
-            drawerWidth: parent.width/2
+            drawerWidth: parent.width * 0.8
 
             height: parent.height - pageHeader.height
 
@@ -103,13 +123,34 @@ MainView {
                 z = 0;
             }
 
-            ListView {
-                id: listViewPlayLists
+            Text
+            {
+                id: drawerHeader
                 anchors
                 {
                     top: parent.top
                     left: parent.left
                     right: parent.right
+
+                    topMargin:units.gu(1)
+                    leftMargin: units.gu(1)
+                    rightMargin: units.gu(1)
+                }
+
+                text: i18n.tr("Play lists")
+                color: UbuntuColors.orange
+                font.bold: true
+                font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
+            }
+
+            ListView {
+                id: listViewPlayLists
+                anchors
+                {
+                    top: drawerHeader.bottom
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: units.gu(2)
                 }
 
                 height: parent.height
@@ -123,8 +164,7 @@ MainView {
                         id: label
                         text: name
                         anchors.verticalCenter: parent.verticalCenter
-                        font.bold: true
-                        font.pixelSize: Screen.pixelDensity*5
+                        font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
                     }
                 }
             }
@@ -171,36 +211,17 @@ MainView {
             }
         }
 
-        CurrentSong
-        {
-            id: currentSong
-
-            anchors {
-                top: pageHeader.bottom
-                left: parent.left
-                right: parent.right
-            }
-
-            height: Screen.pixelDensity*10
-
-            onClickNext:
-            {
-                clementineProxy.playNext();
-            }
-            onClickPrev:
-            {
-                clementineProxy.playPrev();
-            }
-        }
-
         Text
         {
             id: currentPlayListName
             anchors
             {
-                top: currentSong.bottom
+                top: pageHeader.bottom
                 left: parent.left
                 right: parent.right
+
+                topMargin: units.gu(1)
+                leftMargin: units.gu(1)
             }
             font.bold: true
             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
@@ -214,10 +235,11 @@ MainView {
                 top: currentPlayListName.bottom
                 left: parent.left
                 right: parent.right
-                bottom: parent.bottom
+                bottom: currentSong.top
+                leftMargin: units.gu(2)
+                rightMargin: units.gu(2)
             }
 
-            width: parent.width
             model: currentPlayList
 
             delegate: Item {
@@ -227,6 +249,7 @@ MainView {
                 Text {
                     id: songName
                     text: name
+                    width: parent.width
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
                 }
@@ -236,6 +259,28 @@ MainView {
         ListModel
         {
             id: currentPlayList
+        }
+
+        CurrentSong
+        {
+            id: currentSong
+
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+            }
+
+            height: Screen.pixelDensity*10
+
+            onClickNext:
+            {
+                clementineProxy.playNext();
+            }
+            onClickPrev:
+            {
+                clementineProxy.playPrev();
+            }
         }
     }
 }

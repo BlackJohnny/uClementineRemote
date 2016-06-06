@@ -24,9 +24,9 @@ ClementineProxy::~ClementineProxy()
         delete m_currentSong;
 }
 
-void ClementineProxy::connectRemote()
+void ClementineProxy::connectRemote(QString host, int port)
 {
-    m_clientSocket.connectToHost("192.168.1.11", 5500);
+    m_clientSocket.connectToHost(host, port);
 
     emit connectionStatusChanged(Connecting);
 }

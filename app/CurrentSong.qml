@@ -40,12 +40,38 @@ Rectangle {
 
     Rectangle
     {
-        id: row1
+        id: progressBar
         anchors
         {
             left: parent.left
             right: parent.right
             top: parent.top
+            bottom: songControls.top
+        }
+
+        Rectangle
+        {
+            id: songProgress
+            color: "#33ccff"
+            anchors
+            {
+                left: parent.left
+                top: parent.top
+                bottom: parent.bottom
+            }
+            height: progressBar.height
+            width: 0
+        }
+    }
+
+    Rectangle
+    {
+        id: songControls
+        anchors
+        {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
         }
 
         height: parent.height - Screen.pixelDensity*0.5
@@ -78,6 +104,8 @@ Rectangle {
                 right: buttonNext.left
                 top: parent.top
                 bottom: parent.bottom
+                leftMargin: units.gu(1)
+                rightMargin: units.gu(1)
             }
 
             verticalAlignment: Text.AlignVCenter
@@ -102,32 +130,6 @@ Rectangle {
             {
                 clickNext();
             }
-        }
-    }
-
-    Rectangle
-    {
-        id: row2
-        anchors
-        {
-            left: parent.left
-            right: parent.right
-            top: row1.bottom
-            bottom: parent.bottom
-        }
-
-        Rectangle
-        {
-            id: songProgress
-            color: "#33ccff"
-            anchors
-            {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
-            }
-            height: row2.height
-            width: 0
         }
     }
 }
