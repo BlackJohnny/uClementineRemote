@@ -1,5 +1,6 @@
 #include "clementineproxy.h"
 #include <QtEndian>
+#include "filedownloader.h"
 
 ClementineProxy::ClementineProxy(QObject *parent) :
     QObject(parent),
@@ -84,7 +85,7 @@ void ClementineProxy::playSong(int songIndex, int playListId)
             requestPlayListSongs(playList->id());
     }
 }
-void ClementineProxy::downloadSong(int songIndex, int playListId)
+void ClementineProxy::downloadSong(int playListId, QString songUrl)
 {
     if(m_clientSocket.isOpen())
     {
@@ -93,12 +94,12 @@ void ClementineProxy::downloadSong(int songIndex, int playListId)
         msg.set_version(pb::remote::Message::default_instance().version());
 
         pb::remote::RequestDownloadSongs* reqDownloadSongs = new pb::remote::RequestDownloadSongs();
-        pb::remote::
-        pb::remote::DownloadItem
-        reqDownloadSongs->set_download_item();
+
+        reqDownloadSongs->set_download_item(pb::remote::Urls);
         reqDownloadSongs->set_playlist_id(playListId);
-        reqDownloadSongs->set_song_index(songIndex);
-        msg.set_allocated_request_change_song(reqDownloadSongs);
+        reqDownloadSongs->add_urls(songUrl.toStdString().c_str());
+
+        msg.set_allocated_request_download_songs(reqDownloadSongs);
 
         uint32_t msgSize = msg.ByteSize();
         uint8_t msgData[msgSize];
@@ -108,22 +109,9 @@ void ClementineProxy::downloadSong(int songIndex, int playListId)
         m_clientSocket.write((const char*)&beSize, 4);
         m_clientSocket.write((const char*)msgData, msgSize);
         m_clientSocket.flush();
-
-        // If this playlist is loaded signal the remote to change to this play list
-        if(!m_playListsItem)
-            return;
-
-        PlayList* playList = m_playListsItem->getPlayList(playListId);
-
-        if(!playList || playList->isActive())
-            return;
-
-        if(playList->isLoaded())
-            emit m_playListsItem->activePlayListChanged(playList);
-        else
-            requestPlayListSongs(playList->id());
     }
 }
+
 void ClementineProxy::requestPlayLists()
 {
     if(m_clientSocket.isOpen())
@@ -169,6 +157,30 @@ void ClementineProxy::requestPlayListSongs(int playListId)
         m_clientSocket.flush();
     }
 }
+
+void ClementineProxy::sendResponseSongOffer()
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::SONG_OFFER_RESPONSE);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        pb::remote::ResponseSongOffer* responseSongOffer = new pb::remote::ResponseSongOffer();
+        responseSongOffer->set_accepted(true);
+        msg.set_allocated_response_song_offer(responseSongOffer);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+    }
+}
+
 void ClementineProxy::play(bool playNext)
 {
     if(m_clientSocket.isOpen())
@@ -362,6 +374,14 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
 
 void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk)
 {
+    FileDownloader::SaveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size());
+
+    // Only send the accept response for the download on the chunk number 0
+    if(songFileChunk.chunk_number() == 0)
+    {
+        FileDownloader::Init("/home/black/Downloads/test/", songFileChunk.song_metadata());
+        sendResponseSongOffer();
+    }
 }
 
 void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists playLists)

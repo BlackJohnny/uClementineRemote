@@ -27,8 +27,8 @@ MainView {
                     {
                         iconName: "contact"
                         text: "Connect"
-                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
                         //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action
@@ -223,12 +223,15 @@ MainView {
 
                 for(var i = 0; i < songs.length; i++)
                 {
-                    currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index, "plid": playList.id});
+                    currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index,
+                                                    "surl": songs[i].url, "plid": playList.id
+                                                });
                 }
             }
             onNewPlayList:
             {
-                listModelPlayLists.append({"name": playList.name, "id": playList.id, "isActive": playList.isActive});
+                listModelPlayLists.append({"name": playList.name, "id": playList.id,
+                                              "isActive": playList.isActive});
             }
 
             onActivePlayListChanged:
@@ -321,7 +324,7 @@ MainView {
                     z: 10
                     onClicked:
                     {
-                        clementineProxy.playNext();
+                        clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
                     }
                 }
             }
@@ -353,6 +356,7 @@ MainView {
                 property int songIndex: sindex
                 property int songId: id
                 property int playListId: plid
+                property string songUrl: surl
                 Text {
                     id: songName
                     text: name

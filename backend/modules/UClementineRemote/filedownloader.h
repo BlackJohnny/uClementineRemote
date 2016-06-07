@@ -2,6 +2,7 @@
 #define FILEDOWNLOADER_H
 
 #include <QString>
+#include <QFile>
 
 #include "remotecontrolmessages.pb.h"
 
@@ -16,13 +17,22 @@ public:
     };
 
 public:
-    static void Init(int fileNumbers, QString destinationPath);
-    static FileDownloader::DownloadStatus SaveFileChunk(int fileNumber, int fileChunk, int fileSize, void* chunk, int chunkSize, const pb::remote::SongMetadata& songMetaData);
+    static void Init(QString destinationDirectory, const pb::remote::SongMetadata& songMetaData);
+    static void Destroy();
+
+    static bool SaveFileChunk(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize);
+
+private:
+    bool SaveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize);
 
 private:
     FileDownloader();
 
     static FileDownloader* m_instance;
+
+    QFile m_file;
+    int m_currentFileNumber;
+    QString m_destinationDirectory;
 };
 
 #endif // FILEDOWNLOADER_H

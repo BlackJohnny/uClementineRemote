@@ -23,7 +23,8 @@ public slots:
     void playNext();
     void playPrev();
     void playSong(int songIndex, int playListId);
-    void downloadSong(int songIndex, int playListId);
+    void downloadSong(int playListId, QString songUrl);
+    void sendResponseSongOffer();
     void requestPlayListSongs(int playListId);
     void requestPlayLists();
 
