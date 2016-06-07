@@ -23,6 +23,9 @@ public slots:
     void playNext();
     void playPrev();
     void playSong(int songIndex, int playListId);
+    void downloadSong(int songIndex, int playListId);
+    void requestPlayListSongs(int playListId);
+    void requestPlayLists();
 
 private slots:
     void onConnected();
@@ -60,6 +63,8 @@ protected:
     void processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition);
     void processResponseClementineInfo(pb::remote::ResponseClementineInfo clementinInfo);
     void processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata);
+    void processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk);
+
 
 protected:
     void setPlayListsItem(PlayLists* playListsItem) { m_playListsItem = playListsItem; }

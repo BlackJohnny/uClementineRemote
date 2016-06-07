@@ -27,8 +27,8 @@ MainView {
                     {
                         iconName: "contact"
                         text: "Connect"
-                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
                         //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action

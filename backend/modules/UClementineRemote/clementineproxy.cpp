@@ -46,10 +46,9 @@ void ClementineProxy::playPrev()
 {
     play(false);
 }
+
 void ClementineProxy::playSong(int songIndex, int playListId)
 {
-    qDebug() << "Song index:" << songIndex << ", playlist id: " << playListId;
-
     if(m_clientSocket.isOpen())
     {
         pb::remote::Message msg;
@@ -64,10 +63,6 @@ void ClementineProxy::playSong(int songIndex, int playListId)
         uint32_t msgSize = msg.ByteSize();
         uint8_t msgData[msgSize];
         msg.SerializeToArray(msgData, msgSize);
-
-        QString dataString;
-        for(int i = 0; i < msgSize; i++)
-            dataString.append(QString::number(msgData[i]) + " ");
 
         uint32_t beSize = qToBigEndian(msgSize);
         m_clientSocket.write((const char*)&beSize, 4);
@@ -85,10 +80,95 @@ void ClementineProxy::playSong(int songIndex, int playListId)
 
         if(playList->isLoaded())
             emit m_playListsItem->activePlayListChanged(playList);
+        else
+            requestPlayListSongs(playList->id());
+    }
+}
+void ClementineProxy::downloadSong(int songIndex, int playListId)
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::DOWNLOAD_SONGS);
+        msg.set_version(pb::remote::Message::default_instance().version());
 
+        pb::remote::RequestDownloadSongs* reqDownloadSongs = new pb::remote::RequestDownloadSongs();
+        pb::remote::
+        pb::remote::DownloadItem
+        reqDownloadSongs->set_download_item();
+        reqDownloadSongs->set_playlist_id(playListId);
+        reqDownloadSongs->set_song_index(songIndex);
+        msg.set_allocated_request_change_song(reqDownloadSongs);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+
+        // If this playlist is loaded signal the remote to change to this play list
+        if(!m_playListsItem)
+            return;
+
+        PlayList* playList = m_playListsItem->getPlayList(playListId);
+
+        if(!playList || playList->isActive())
+            return;
+
+        if(playList->isLoaded())
+            emit m_playListsItem->activePlayListChanged(playList);
+        else
+            requestPlayListSongs(playList->id());
+    }
+}
+void ClementineProxy::requestPlayLists()
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::REQUEST_PLAYLISTS);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        pb::remote::RequestPlaylists* reqPlayLists = new pb::remote::RequestPlaylists();
+        reqPlayLists->set_include_closed(false);
+        msg.set_allocated_request_playlists(reqPlayLists);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
     }
 }
 
+void ClementineProxy::requestPlayListSongs(int playListId)
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::REQUEST_PLAYLIST_SONGS);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        pb::remote::RequestPlaylistSongs* reqPlayListSongs = new pb::remote::RequestPlaylistSongs();
+        reqPlayListSongs->set_id(playListId);
+        msg.set_allocated_request_playlist_songs(reqPlayListSongs);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+    }
+}
 void ClementineProxy::play(bool playNext)
 {
     if(m_clientSocket.isOpen())
@@ -100,10 +180,6 @@ void ClementineProxy::play(bool playNext)
         uint32_t msgSize = msg.ByteSize();
         uint8_t msgData[msgSize];
         msg.SerializeToArray(msgData, msgSize);
-
-        QString dataString;
-        for(int i = 0; i < msgSize; i++)
-            dataString.append(QString::number(msgData[i]) + " ");
 
         uint32_t beSize = qToBigEndian(msgSize);
         m_clientSocket.write((const char*)&beSize, 4);
@@ -141,6 +217,9 @@ void ClementineProxy::onConnected()
         m_clientSocket.write((const char*)&beSize, 4);
         m_clientSocket.write((const char*)msgData, msgSize);
         m_clientSocket.flush();
+
+        // Requests play lists on connect
+        requestPlayLists();
     }
 }
 
@@ -162,8 +241,6 @@ void ClementineProxy::readyRead()
                             (((uint8_t)readBuffer.at(1)) << 16) +
                             (((uint8_t)readBuffer.at(2)) << 8) +
                             ((uint8_t)readBuffer.at(3));
-
-        qDebug() << "Got msg with size:" << msgSize;
 
         if(readBuffer.length() >= 4 + msgSize)
         {
@@ -204,7 +281,6 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             processResponseCurrentMetadata(message.response_current_metadata());
             break;
         case pb::remote::UPDATE_TRACK_POSITION:
-            qDebug() << "New message: UPDATE_TRACK_POSITION";
             processResponseUpdateTrackPosition(message.response_update_track_position());
             break;
         case pb::remote::KEEP_ALIVE:
@@ -237,7 +313,7 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             processResponsePlaylists(message.response_playlists());
             break;
         case pb::remote::PLAYLIST_SONGS:
-            qDebug() << "New message: PLAYLIST_SONGS";
+            qDebug() << "New message: PLAYLIST_SONGS" << message.response_playlist_songs().requested_playlist().id();
             processResponsePlaylistSongs(message.response_playlist_songs());
             break;
         case pb::remote::ACTIVE_PLAYLIST_CHANGED:
@@ -258,6 +334,7 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
         case pb::remote::SONG_FILE_CHUNK:
             qDebug() << "New message: SONG_FILE_CHUNK";
+            processResponseSongFileChunk(message.response_song_file_chunk());
             break;
         case pb::remote::DOWNLOAD_QUEUE_EMPTY:
             qDebug() << "New message: DOWNLOAD_QUEUE_EMPTY";
@@ -269,7 +346,7 @@ void ClementineProxy::processMessage(pb::remote::Message message)
     }
 }
 
-void ClementineProxy::processResponseClementineInfo(pb::remote::ResponseClementineInfo clementinInfo)
+void ClementineProxy::processResponseClementineInfo(pb::remote::ResponseClementineInfo clementineInfo)
 {
 }
 
@@ -283,6 +360,10 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
     emit activeSongChanged(m_currentSong);
 }
 
+void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk)
+{
+}
+
 void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists playLists)
 {
     if(!m_playListsItem)
@@ -291,10 +372,15 @@ void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists pla
     // First clear the existing play list
     emit m_playListsItem->clearPlaylists();
 
+    int currentPlayListId;
+
     for(int i = 0; i < playLists.playlist_size(); i++)
     {
         m_playListsItem->addPlayList(playLists.playlist(i));
     }
+
+    // Request the songs for the active playlist
+    requestPlayListSongs(m_playListsItem->activePlayListId());
 
     qDebug() << "update playlists";
 }
@@ -330,6 +416,5 @@ void ClementineProxy::processResponseActiveChanged(pb::remote::ResponseActiveCha
 
 void ClementineProxy::processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition)
 {
-    qDebug() << updateTrackPosition.position();
     emit updateSongPosition(updateTrackPosition.position());
 }
