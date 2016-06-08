@@ -22,13 +22,14 @@ MainView {
             {
                 id: pageHeader
                 title: "uClementineRemote"
+                z: 151
                 leadingActionBar.actions: [
                     Action
                     {
                         iconName: "contact"
                         text: "Connect"
-                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
                         //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action
@@ -88,9 +89,57 @@ MainView {
             {
                 currentSong.setSongPosition(position);
             }
+            onUpdateDownloadProgress:
+            {
+                downloadManager.setDownloadProgress((chunk/chunks)*100);
+
+                if(chunk != 0 && chunk == chunks)
+                {
+                    slideViewTop.hideMenu();
+                    downloadManager.setDownloadProgress(0);
+                    downloadManager.downloadTitle = i18n.tr("Idle ...");
+                    slideViewTop.visible = false;
+                }
+            }
+
             onConnectionStatusChanged:
             {
                 // TODO add GUI for connection status
+            }
+        }
+        SlideView {
+            id: slideViewTop
+            sliderPosition: Qt.TopEdge
+            backgroundColor: "transparent"
+            menuVisible: false
+            anchors
+            {
+                top: pageHeader.bottom
+                left: parent.left
+                right: parent.right
+                //bottom: parent.bottom
+            }
+            visible: false
+            autoHideMenu: false
+            drawerHeight: downloadManager.height
+            height: downloadManager.height + units.gu(5)
+            drawerWidth: downloadManager.width
+            z: 150
+
+            DownloadManager
+            {
+                id: downloadManager
+                anchors
+                {
+                    top: pageHeader.bottom
+                    left: parent.left
+                    right: parent.right
+                    topMargin: units.gu(1)
+                    leftMargin: units.gu(5)
+                    rightMargin: units.gu(5)
+                }
+
+                backgroundColor: "white"
             }
         }
 
@@ -217,6 +266,7 @@ MainView {
             function setActivePlayList(playList)
             {
                 currentPlayListModel.clear();
+
                 currentPlayListName.text = playList.name;
 
                 var songs = playList.songs();
@@ -224,7 +274,8 @@ MainView {
                 for(var i = 0; i < songs.length; i++)
                 {
                     currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index,
-                                                    "surl": songs[i].url, "plid": playList.id
+                                                    "surl": songs[i].url, "sfilename": songs[i].filename,
+                                                    "plid": playList.id
                                                 });
                 }
             }
@@ -324,7 +375,10 @@ MainView {
                     z: 10
                     onClicked:
                     {
+                        downloadManager.downloadTitle = listViewPlayList.currentItem.songFileName;
                         clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
+                        slideViewTop.visible = true;
+                        slideViewTop.showMenu();
                     }
                 }
             }
@@ -357,6 +411,7 @@ MainView {
                 property int songId: id
                 property int playListId: plid
                 property string songUrl: surl
+                property string songFileName: sfilename
                 Text {
                     id: songName
                     text: name

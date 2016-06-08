@@ -376,6 +376,8 @@ void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileC
 {
     FileDownloader::SaveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size());
 
+    emit updateDownloadProgress(songFileChunk.chunk_number(), songFileChunk.chunk_count());
+
     // Only send the accept response for the download on the chunk number 0
     if(songFileChunk.chunk_number() == 0)
     {

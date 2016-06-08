@@ -48,9 +48,9 @@ Q_SIGNALS:
     void connectionStatusChanged(ConnectionStatus connectionStatus);
     void activeSongChanged(Song* song); // this event might happen when there is no play list loaded
     void updateSongPosition(int position);
+    void updateDownloadProgress(int chunk, int chunks);
 
     void communicationError(QString error);
-    //void newMessageReceived(pb::remote::Message newMessage);
 
 public:
     explicit ClementineProxy(QObject *parent = 0);

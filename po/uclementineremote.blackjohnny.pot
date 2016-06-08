@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-07 23:52+0300\n"
+"POT-Creation-Date: 2016-06-08 18:41+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,18 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../app/Main.qml:142
+#: ../app/DownloadManager.qml:48
+msgid "Download"
+msgstr ""
+
+#: ../app/Main.qml:100
+msgid "Idle ..."
+msgstr ""
+
+#: ../app/Main.qml:190
 msgid "Play lists"
 msgstr ""
 
-#: /home/black/repo/build-uClementineRemote-Desktop-Default/po/uClementineRemote.desktop.in.h:1
+#: /home/black/repo/uClementineRemote-build/po/uClementineRemote.desktop.in.h:1
 msgid "uClementineRemote"
 msgstr ""
