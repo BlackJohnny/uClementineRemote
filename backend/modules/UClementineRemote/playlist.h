@@ -22,12 +22,11 @@ public slots:
 public:
     explicit PlayList(QObject *parent = 0);
     PlayList(const pb::remote::Playlist& playList);
+    ~PlayList();
 
 public:
     PlayList& operator=(const pb::remote::Playlist& playList);
-    bool isLoaded() {
-        qDebug() << "++++++++++++++++++++++++++" << m_songs.size();
-        return m_loaded; }
+    bool isLoaded() { return m_loaded; }
     void addSong(const pb::remote::SongMetadata& songData);
 
 public:
@@ -35,6 +34,7 @@ public:
     int id() { return m_id; }
     bool isActive() { return m_isActive; }
     void setActive(bool active) { m_isActive = active; }
+    void clear();
 
 
 protected:

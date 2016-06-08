@@ -13,6 +13,12 @@ PlayList::PlayList(const pb::remote::Playlist& playList)
     *this = playList;
 }
 
+PlayList::~PlayList()
+{
+    // Dealocate the Song pointers
+    clear();
+}
+
 PlayList& PlayList::operator=(const pb::remote::Playlist& playList)
 {
     m_name = playList.name().c_str();
@@ -41,4 +47,13 @@ QVariantList PlayList::songs()
         newList.append(QVariant::fromValue(*i));
 
     return newList;
+}
+void PlayList::clear()
+{
+    QList<Song*>::iterator i;
+
+    for(i = m_songs.begin(); i != m_songs.end(); ++i)
+        delete (*i);
+
+    m_songs.clear();
 }

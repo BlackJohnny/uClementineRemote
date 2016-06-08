@@ -22,9 +22,6 @@ void PlayLists::addPlayList(const pb::remote::Playlist& playList)
 
     if(pl->isActive())
         m_activePlayListId = pl->id();
-
-    // Push the event to GUI
-    Q_EMIT newPlayList(pl);
 }
 
 PlayList* PlayLists::getPlayList(int id)

@@ -28,8 +28,8 @@ MainView {
                     {
                         iconName: "contact"
                         text: "Connect"
-                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
                         //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action
@@ -80,6 +80,17 @@ MainView {
                 clementineProxy.playLists = playLists;
             }
 
+            onUpdatePlayLists:
+            {
+                listModelPlayLists.clear();
+
+                for(var i = 0; i < playLists.length; i++)
+                {
+                    listModelPlayLists.append({"name": playLists[i].name, "id": playLists[i].id,
+                                                  "isActive": playLists[i].isActive});
+                }
+            }
+
             onActiveSongChanged:
             {
                 currentSong.title = song.title;
@@ -91,9 +102,14 @@ MainView {
             }
             onUpdateDownloadProgress:
             {
+                if(chunk == 0)
+                {
+                    downloadManager.downloadTitle = songFileName;
+                    return;
+                }
                 downloadManager.setDownloadProgress((chunk/chunks)*100);
 
-                if(chunk != 0 && chunk == chunks)
+                if(chunk == chunks)
                 {
                     slideViewTop.hideMenu();
                     downloadManager.setDownloadProgress(0);
@@ -107,6 +123,43 @@ MainView {
                 // TODO add GUI for connection status
             }
         }
+
+        PlayLists
+        {
+            id: playLists
+            function setActivePlayList(playList)
+            {
+                currentPlayListModel.clear();
+
+                currentPlayListName.text = playList.name;
+
+                var songs = playList.songs();
+
+                for(var i = 0; i < songs.length; i++)
+                {
+                    currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index,
+                                                    "surl": songs[i].url, "sfilename": songs[i].filename,
+                                                    "plid": playList.id
+                                                });
+                }
+            }
+
+            onActivePlayListChanged:
+            {
+                setActivePlayList(playList);
+            }
+
+            onPlayListSongs:
+            {
+                setActivePlayList(playList);
+            }
+
+            onClearPlaylists:
+            {
+                listModelPlayLists.clear();
+            }
+        }
+
         SlideView {
             id: slideViewTop
             sliderPosition: Qt.TopEdge
@@ -117,12 +170,10 @@ MainView {
                 top: pageHeader.bottom
                 left: parent.left
                 right: parent.right
-                //bottom: parent.bottom
             }
             visible: false
             autoHideMenu: false
-            drawerHeight: downloadManager.height
-            height: downloadManager.height + units.gu(5)
+            drawerHeight: downloadManager.height + units.gu(1) // add the top margin from the DownloadManager
             drawerWidth: downloadManager.width
             z: 150
 
@@ -131,7 +182,7 @@ MainView {
                 id: downloadManager
                 anchors
                 {
-                    top: pageHeader.bottom
+                    top: parent.top
                     left: parent.left
                     right: parent.right
                     topMargin: units.gu(1)
@@ -211,7 +262,8 @@ MainView {
                     }
                 }
             }
-            ListView {
+            ListView
+            {
                 id: listViewPlayLists
                 anchors
                 {
@@ -257,47 +309,6 @@ MainView {
             ListModel
             {
                 id: listModelPlayLists
-            }
-        }
-
-        PlayLists
-        {
-            id: playLists
-            function setActivePlayList(playList)
-            {
-                currentPlayListModel.clear();
-
-                currentPlayListName.text = playList.name;
-
-                var songs = playList.songs();
-
-                for(var i = 0; i < songs.length; i++)
-                {
-                    currentPlayListModel.append({"name": songs[i].title, "id": songs[i].id, "sindex": songs[i].index,
-                                                    "surl": songs[i].url, "sfilename": songs[i].filename,
-                                                    "plid": playList.id
-                                                });
-                }
-            }
-            onNewPlayList:
-            {
-                listModelPlayLists.append({"name": playList.name, "id": playList.id,
-                                              "isActive": playList.isActive});
-            }
-
-            onActivePlayListChanged:
-            {
-                setActivePlayList(playList);
-            }
-
-            onPlayListSongs:
-            {
-                setActivePlayList(playList);
-            }
-
-            onClearPlaylists:
-            {
-                listModelPlayLists.clear();
             }
         }
 
@@ -375,7 +386,6 @@ MainView {
                     z: 10
                     onClicked:
                     {
-                        downloadManager.downloadTitle = listViewPlayList.currentItem.songFileName;
                         clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
                         slideViewTop.visible = true;
                         slideViewTop.showMenu();

@@ -13,6 +13,8 @@ ClementineProxy::ClementineProxy(QObject *parent) :
     connect(&m_clientSocket, SIGNAL(connected()), this, SLOT(onConnected()), Qt::DirectConnection);
     connect(&m_clientSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(error(QAbstractSocket::SocketError)), Qt::DirectConnection);
     connect(&m_clientSocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(checkDownloadQueue()));
+    m_timer.setSingleShot(false);
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -25,6 +27,25 @@ ClementineProxy::~ClementineProxy()
 
     if(m_currentSong)
         delete m_currentSong;
+}
+
+void ClementineProxy::checkDownloadQueue()
+{
+    FileDownloader::DownloadStatus dlStatus = FileDownloader::getDownloadStatus();
+
+    if(dlStatus == FileDownloader::DownloadIdle || dlStatus == FileDownloader::DownloadCompleted)
+    {
+        int playListId;
+        QString songUrl;
+        if(FileDownloader::GetNextDownload(playListId, songUrl))
+        {
+            // Set the downloader in a wait state
+            FileDownloader::newDownloadRequested();
+
+            // Issue the download request
+            requestDownloadSong(playListId, songUrl);
+        }
+    }
 }
 
 void ClementineProxy::connectRemote(QString host, int port, int authCode)
@@ -78,15 +99,19 @@ void ClementineProxy::playSong(int songIndex, int playListId)
 
         if(!playList || playList->isActive())
             return;
-
-        if(playList->isLoaded())
-            emit m_playListsItem->activePlayListChanged(playList);
-        else
-            requestPlayListSongs(playList->id());
     }
 }
+
 void ClementineProxy::downloadSong(int playListId, QString songUrl)
 {
+    // Register this download and let the file downloader to handle it
+    FileDownloader::RegisterDownload(playListId, songUrl);
+}
+
+void ClementineProxy::requestDownloadSong(int playListId, QString songUrl)
+{
+    qDebug() << "Request download for song " << songUrl;
+
     if(m_clientSocket.isOpen())
     {
         pb::remote::Message msg;
@@ -111,7 +136,6 @@ void ClementineProxy::downloadSong(int playListId, QString songUrl)
         m_clientSocket.flush();
     }
 }
-
 void ClementineProxy::requestPlayLists()
 {
     if(m_clientSocket.isOpen())
@@ -214,7 +238,7 @@ void ClementineProxy::onConnected()
 
         pb::remote::RequestConnect* reqConnect = new pb::remote::RequestConnect();
         reqConnect->set_auth_code(m_authCode);
-        reqConnect->set_send_playlist_songs(true);
+        reqConnect->set_send_playlist_songs(false);
         msg.set_allocated_request_connect(reqConnect);
 
         uint32_t msgSize = msg.ByteSize();
@@ -230,8 +254,10 @@ void ClementineProxy::onConnected()
         m_clientSocket.write((const char*)msgData, msgSize);
         m_clientSocket.flush();
 
-        // Requests play lists on connect
-        requestPlayLists();
+        // Start the download queue timer
+        qDebug() << "Timer started ==============";
+        m_timer.start(5000);
+        FileDownloader::SetDownloadDirectory("/home/black/Downloads/test/");
     }
 }
 
@@ -374,15 +400,17 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
 
 void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk)
 {
-    FileDownloader::SaveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size());
+    FileDownloader::DownloadStatus downloadStatus = FileDownloader::SaveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size(), songFileChunk.song_metadata());
 
-    emit updateDownloadProgress(songFileChunk.chunk_number(), songFileChunk.chunk_count());
-
-    // Only send the accept response for the download on the chunk number 0
-    if(songFileChunk.chunk_number() == 0)
+    if(downloadStatus == FileDownloader::DownloadStarted)
     {
-        FileDownloader::Init("/home/black/Downloads/test/", songFileChunk.song_metadata());
+        updateDownloadProgress(0, 0, songFileChunk.song_metadata().filename().c_str());
         sendResponseSongOffer();
+    }
+    else if(downloadStatus == FileDownloader::DownloadInProgress ||
+            downloadStatus == FileDownloader::DownloadCompleted)
+    {
+        emit updateDownloadProgress(songFileChunk.chunk_number(), songFileChunk.chunk_count(), "");
     }
 }
 
@@ -391,18 +419,21 @@ void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists pla
     if(!m_playListsItem)
         return;
 
+    QVariantList playlistsVariant;
+
     // First clear the existing play list
     emit m_playListsItem->clearPlaylists();
-
-    int currentPlayListId;
 
     for(int i = 0; i < playLists.playlist_size(); i++)
     {
         m_playListsItem->addPlayList(playLists.playlist(i));
+        playlistsVariant.append(QVariant::fromValue(m_playListsItem->getPlayList(playLists.playlist(i).id())));
     }
 
     // Request the songs for the active playlist
     requestPlayListSongs(m_playListsItem->activePlayListId());
+
+    emit updatePlayLists(playlistsVariant);
 
     qDebug() << "update playlists";
 }
@@ -417,6 +448,9 @@ void ClementineProxy::processResponsePlaylistSongs(pb::remote::ResponsePlaylistS
     // TODO: is this a real use case? ... add the list maybe
     if(pl == NULL)
         return;
+
+    // Clear the playlis
+    pl->clear();
 
     // Add the songs to the specified playlist
     for(int i = 0; i < playListSongs.songs_size(); i++)

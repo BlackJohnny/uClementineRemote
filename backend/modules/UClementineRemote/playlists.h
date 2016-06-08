@@ -18,7 +18,6 @@ public:
     ~PlayLists();
 
 Q_SIGNALS:
-    void newPlayList(PlayList* playList);
     void playListSongs(PlayList* playList);
     void activePlayListChanged(PlayList* playList);
     void clearPlaylists();

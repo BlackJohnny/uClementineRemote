@@ -49,7 +49,7 @@ import QtGraphicalEffects 1.0
 
 Item {
     id: root
-
+//color: "yellow"
     property alias drawerHeight: menuView.height
     property alias drawerWidth: menuView.width
     property alias backgroundColor: backgroundItem.color
@@ -129,6 +129,8 @@ Item {
         }
     }
 
+    height: menuView.height + menuButton.height + units.gu(2)
+
     SystemPalette {
         id: systemPalette; colorGroup: SystemPalette.Active
     }
@@ -204,7 +206,8 @@ Item {
     {
        id: menuView
 
-       anchors.top: {
+       anchors.top:
+       {
            switch(sliderPosition)
            {
                 case Qt.TopEdge:
@@ -218,7 +221,8 @@ Item {
            }
        }
 
-       anchors.bottom: {
+       anchors.bottom:
+       {
            switch(sliderPosition)
            {
                 case Qt.TopEdge:
@@ -231,7 +235,8 @@ Item {
                     return;
            }
        }
-       anchors.left: {
+       anchors.left:
+       {
            switch(sliderPosition)
            {
                 case Qt.TopEdge:
@@ -245,7 +250,8 @@ Item {
            }
        }
 
-       anchors.right: {
+       anchors.right:
+       {
            switch(sliderPosition)
            {
                 case Qt.TopEdge:
@@ -263,6 +269,7 @@ Item {
 
        opacity: 1//viewTranslate.y/height
        enabled: opacity != 0
+
        Rectangle
        {
            id: backgroundItem
