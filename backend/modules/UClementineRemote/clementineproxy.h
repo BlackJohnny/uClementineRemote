@@ -29,6 +29,8 @@ public slots:
     void requestPlayListSongs(int playListId);
     void requestDownloadSong(int playListId, QString songUrl);
     void requestPlayLists();
+    bool isDownloadQueueEmpty();
+    int downloadQueueSize();
 
 private slots:
     void onConnected();

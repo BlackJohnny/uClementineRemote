@@ -36,6 +36,7 @@ set(DATA_DIR /)
 set(DESKTOP_DIR ${DATA_DIR})
 set(DESKTOP_FILE_NAME "uClementineRemote.desktop")
 
+
 set(EXEC "qmlscene %U ${UCLEMENTINEREMOTE_DIR}/${MAIN_QML}")
 
 # This command figures out the target architecture for use in the manifest file
@@ -51,6 +52,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/manifest.json
 
 install(DIRECTORY "app/graphics" DESTINATION ${DATA_DIR})
 install(FILES "uClementineRemote.apparmor" DESTINATION ${DATA_DIR})
+install(FILES "uClementineRemotecontenthub.json" DESTINATION ${DATA_DIR})
 
 add_subdirectory(app)
 add_subdirectory(backend)
@@ -72,5 +74,5 @@ add_custom_target("run" /usr/bin/qmlscene -I ${CMAKE_BINARY_DIR}/backend  ${CMAK
                     WORKING_DIRECTORY ./app)
 
 # No op custom target for all not compiled files, so they show up in the QtCreator project tree
-add_custom_target("uclementineremote_ClickFiles" ALL SOURCES "uClementineRemote.apparmor" "manifest.json.in")
+add_custom_target("uclementineremote_ClickFiles" ALL SOURCES "uClementineRemote.apparmor" "manifest.json.in" "uClementineRemotecontenthub.json")
 

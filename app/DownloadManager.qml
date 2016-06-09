@@ -35,6 +35,11 @@ Rectangle {
         downloadProgress.width = (downloadProgress.parent.width * position) / 100;
     }
 
+    function setDownloadQueueSizeInfo(queueSizeInfo)
+    {
+        queueStatus.text = queueSizeInfo;
+    }
+
     signal clickCancel()
 
     border.color: UbuntuColors.orange
@@ -45,11 +50,11 @@ Rectangle {
     Text
     {
         id: title
-        text: i18n.tr("Download")
+        text: i18n.tr("Downloading")
         anchors
         {
             left: parent.left
-            right: parent.right
+            //right: parent.right
             top: parent.top
             topMargin: units.gu(1)
             leftMargin: units.gu(1)
@@ -59,7 +64,20 @@ Rectangle {
         font.bold: true
         font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
     }
-
+    Text
+    {
+        id: queueStatus
+        anchors
+        {
+            left: title.right
+            right: parent.right
+            leftMargin: units.gu(1)
+            verticalCenter: title.verticalCenter
+        }
+        verticalAlignment: Text.AlignVCenter
+        font.bold: false
+        font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
+    }
     Text
     {
         id: songTitle

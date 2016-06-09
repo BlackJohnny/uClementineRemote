@@ -6,12 +6,11 @@
     "hooks": {
         "uClementineRemote": {
             "apparmor": "uClementineRemote.apparmor",
-            "desktop":  "uClementineRemote.desktop"
+            "desktop": "uClementineRemote.desktop",
+            "content-hub": "uClementineRemotecontenthub.json"
         }
     },
     "version": "0.1",
     "maintainer": "Ionut Negru <blackjohnny@gmail.com>",
-    "framework" : "ubuntu-sdk-15.04.5"
+    "framework": "ubuntu-sdk-15.04.5"
 }
-
-

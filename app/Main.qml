@@ -1,7 +1,9 @@
 import QtQuick 2.4
 import Ubuntu.Components 1.3
 import QtQuick.Window 2.2
+import Ubuntu.Content 1.3
 import UClementineRemote 1.0
+
 /*!
     \brief MainView with a Label and Button elements.
 */
@@ -16,7 +18,8 @@ MainView {
     width: units.gu(100)
     height: units.gu(75)
 
-    Page {
+    Page
+    {
         header:
             PageHeader
             {
@@ -28,8 +31,8 @@ MainView {
                     {
                         iconName: "contact"
                         text: "Connect"
-                        onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
                         //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
                     },
                     Action
@@ -73,8 +76,11 @@ MainView {
                 }
             }
 
+        //id: mainPage
+
         ClementineProxy {
             id: clementineProxy
+            property int propDownloadQueueSize
 
             Component.onCompleted: {
                 clementineProxy.playLists = playLists;
@@ -96,10 +102,12 @@ MainView {
                 currentSong.title = song.title;
                 currentSong.songLength = song.length;
             }
+
             onUpdateSongPosition:
             {
                 currentSong.setSongPosition(position);
             }
+
             onUpdateDownloadProgress:
             {
                 if(chunk == 0)
@@ -107,14 +115,34 @@ MainView {
                     downloadManager.downloadTitle = songFileName;
                     return;
                 }
+
+                propDownloadQueueSize = clementineProxy.downloadQueueSize();
+
                 downloadManager.setDownloadProgress((chunk/chunks)*100);
 
+                // Download completed
                 if(chunk == chunks)
                 {
-                    slideViewTop.hideMenu();
+                    transferSongFilePage.visible = true;
+                    mainPage.visible = false;
                     downloadManager.setDownloadProgress(0);
-                    downloadManager.downloadTitle = i18n.tr("Idle ...");
+                    downloadManager.downloadTitle = i18n.tr("Waiting for the next file ...");
+
+                }
+
+                if(propDownloadQueueSize === 0)
+                {
+                    downloadManager.setDownloadQueueSizeInfo("");
+                    downloadManager.downloadTitle = i18n.tr("Idle");
+                    slideViewTop.hideMenu();
                     slideViewTop.visible = false;
+                }
+                else
+                {
+                    if(propDownloadQueueSize > 1)
+                        downloadManager.setDownloadQueueSizeInfo("(" + propDownloadQueueSize + i18n.tr(" in queue)"));
+                    else
+                        downloadManager.setDownloadQueueSizeInfo("");
                 }
             }
 
@@ -247,18 +275,15 @@ MainView {
 
             Component {
                 id: highlightPlayLists
-                Rectangle {
+                Rectangle
+                {
                     width: 180; height: 140
                     color: "lightsteelblue"; radius: 5
                     y: listViewPlayLists.currentItem.y
 
-                    Behavior on y {
+                    Behavior on y
+                    {
                         NumberAnimation { duration: 400; easing.type: Easing.OutQuad; }
-                        /*
-                        SpringAnimation {
-                            spring: 3
-                            damping: 0.2
-                        }*/
                     }
                 }
             }
@@ -328,10 +353,13 @@ MainView {
             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
         }
 
-        Component {
+        Component
+        {
             id: highlight
 
             Rectangle {
+
+                id: highlightContainer
                 width: listViewPlayList.currentItem.width;
                 height: listViewPlayList.currentItem.height
 
@@ -373,7 +401,7 @@ MainView {
                 ButtonSvg
                 {
                     id: buttonDownload
-
+                    visible: clementineProxy.propDownloadQueueSize < 3
                     anchors
                     {
                         right: parent.right
@@ -387,6 +415,7 @@ MainView {
                     onClicked:
                     {
                         clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
+                        clementineProxy.propDownloadQueueSize = clementineProxy.downloadQueueSize();
                         slideViewTop.visible = true;
                         slideViewTop.showMenu();
                     }
@@ -408,7 +437,9 @@ MainView {
             }
             highlight: highlight
             highlightFollowsCurrentItem: false
+
             model: currentPlayListModel
+
             focus: true
             delegate: Item {
                 anchors
@@ -422,7 +453,8 @@ MainView {
                 property int playListId: plid
                 property string songUrl: surl
                 property string songFileName: sfilename
-                Text {
+                Text
+                {
                     id: songName
                     text: name
                     anchors
@@ -480,6 +512,49 @@ MainView {
             {
                 clementineProxy.playPrev();
             }
+        }
+    }
+
+    Page
+    {
+        id: transferSongFilePage
+        visible: false
+        property var activeTransfer
+        property string songFile: "/home/phablet/Music/2016/2016.01/INNA - Yalla.mp3"
+
+        ContentPeerPicker
+        {
+            id: peerPicker
+            handler: ContentHandler.Destination
+            contentType: ContentType.Music
+            onPeerSelected:
+            {
+                if(peer)
+                {
+                    var transfer = peer.request();
+                    var items = new Array;
+                    exportItem.url = cpp.songFile;
+                    items.push(exportItem);
+                    transfer.items = items;
+                    transfer.state = ContentTransfer.Charged;
+
+                    cpp.visible = false;
+
+                    transferHint.visible = true;
+                }
+            }
+            onCancelPressed: {
+                mainPage.visible = true;
+                transferSongFilePage.visible = false;
+            }
+        }
+
+        ContentTransferHint
+        {
+            id: transferHint
+            visible: true
+            anchors.fill: transferSongFilePage
+            activeTransfer: transferSongFilePage.activeTransfer
         }
     }
 }

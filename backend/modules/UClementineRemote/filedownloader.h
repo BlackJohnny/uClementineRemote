@@ -23,21 +23,25 @@ public:
     };
 
 public:
-    static void RegisterDownload(int playListId, QString songUrl);
-    static void StartDownload(const pb::remote::SongMetadata& songMetaData);
-    static bool GetNextDownload(int& playListId, QString& songUrl);
+    static void registerDownload(int playListId, QString songUrl);
+    static void startDownload(const pb::remote::SongMetadata& songMetaData);
+    static bool getNextDownload(int& playListId, QString& songUrl);
     static FileDownloader::DownloadStatus getDownloadStatus();
-    static void SetDownloadDirectory(QString destinationDirectory);
+    static bool isDownloadQueueEmpty();
+    static int downloadQueueSize();
+    static void setDownloadDirectory(QString destinationDirectory);
     static void newDownloadRequested();
 
     static void Destroy();
 
-    static FileDownloader::DownloadStatus SaveFileChunk(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData);
+    static FileDownloader::DownloadStatus saveFileChunk(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData);
 
 private:
-    void RegisterDownloadInternal(int playListId, QString songUrl);
-    FileDownloader::DownloadStatus SaveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData);
-    bool GetNextDownloadInternal(int& playListId, QString& songUrl);
+    void registerDownloadInternal(int playListId, QString songUrl);
+    FileDownloader::DownloadStatus saveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData);
+    bool getNextDownloadInternal(int& playListId, QString& songUrl);
+    bool isDownloadQueueEmptyInternal();
+    int downloadQueueSizeInternal();
 
 private:
     FileDownloader();

@@ -21,6 +21,9 @@ void BackendPlugin::registerTypes(const char *uri)
 
 void BackendPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 {
+    //QCoreApplication::setApplicationName("uclementineremote.blackjohnny");
+    //QCoreApplication::setOrganizationDomain("uclementineremote.blackjohnny");
+
     QQmlExtensionPlugin::initializeEngine(engine, uri);
 }
 

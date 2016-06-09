@@ -17,6 +17,37 @@ FileDownloader::DownloadStatus FileDownloader::getDownloadStatus()
     return m_instance->m_downloadStatus;
 }
 
+bool FileDownloader::isDownloadQueueEmpty()
+{
+    if(!m_instance)
+        return true;
+
+    return m_instance->isDownloadQueueEmptyInternal();
+}
+
+bool FileDownloader::isDownloadQueueEmptyInternal()
+{
+    QMutexLocker locker(&m_queueReadWriteLock);
+
+    return m_downloadQueue.size() == 0;
+}
+
+int FileDownloader::downloadQueueSize()
+{
+    if(!m_instance)
+        m_instance = new FileDownloader();
+
+    return m_instance->downloadQueueSizeInternal();
+}
+
+int FileDownloader::downloadQueueSizeInternal()
+{
+    QMutexLocker locker(&m_queueReadWriteLock);
+
+    return m_downloadQueue.size();
+
+}
+
 void FileDownloader::newDownloadRequested()
 {
     if(!m_instance)
@@ -25,7 +56,7 @@ void FileDownloader::newDownloadRequested()
     m_instance->m_downloadStatus = DownloadWaiting;
 }
 
-void FileDownloader::SetDownloadDirectory(QString destinationDirectory)
+void FileDownloader::setDownloadDirectory(QString destinationDirectory)
 {
     if(!m_instance)
         m_instance = new FileDownloader();
@@ -33,30 +64,30 @@ void FileDownloader::SetDownloadDirectory(QString destinationDirectory)
     m_instance->m_destinationDirectory = destinationDirectory;
 }
 
-void FileDownloader::RegisterDownload(int playListId, QString songUrl)
+void FileDownloader::registerDownload(int playListId, QString songUrl)
 {
     if(!m_instance)
         m_instance = new FileDownloader();
 
-    return m_instance->RegisterDownloadInternal(playListId, songUrl);
+    return m_instance->registerDownloadInternal(playListId, songUrl);
 }
 
-void FileDownloader::RegisterDownloadInternal(int playListId, QString songUrl)
+void FileDownloader::registerDownloadInternal(int playListId, QString songUrl)
 {
     QMutexLocker locker(&m_queueReadWriteLock);
 
     m_downloadQueue[songUrl] = playListId;
 }
 
-bool FileDownloader::GetNextDownload(int& playListId, QString& songUrl)
+bool FileDownloader::getNextDownload(int& playListId, QString& songUrl)
 {
     if(!m_instance)
         m_instance = new FileDownloader();
 
-    return m_instance->GetNextDownloadInternal(playListId, songUrl);
+    return m_instance->getNextDownloadInternal(playListId, songUrl);
 }
 
-bool FileDownloader::GetNextDownloadInternal(int& playListId, QString& songUrl)
+bool FileDownloader::getNextDownloadInternal(int& playListId, QString& songUrl)
 {
     QMutexLocker locker(&m_queueReadWriteLock);
 
@@ -70,7 +101,7 @@ bool FileDownloader::GetNextDownloadInternal(int& playListId, QString& songUrl)
     return false;
 }
 
-void FileDownloader::StartDownload(const pb::remote::SongMetadata& songMetaData)
+void FileDownloader::startDownload(const pb::remote::SongMetadata& songMetaData)
 {
     if(!m_instance)
         m_instance = new FileDownloader();
@@ -92,19 +123,19 @@ void FileDownloader::Destroy()
     }
 }
 
-FileDownloader::DownloadStatus FileDownloader::SaveFileChunk(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData)
+FileDownloader::DownloadStatus FileDownloader::saveFileChunk(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData)
 {
     if(!m_instance)
         m_instance = new FileDownloader();
 
-    return m_instance->SaveFileChunkInternal(fileNumber, chunkNumber, chunkCount, chunkData, chunkSize, songMetaData);
+    return m_instance->saveFileChunkInternal(fileNumber, chunkNumber, chunkCount, chunkData, chunkSize, songMetaData);
 }
 
-FileDownloader::DownloadStatus FileDownloader::SaveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData)
+FileDownloader::DownloadStatus FileDownloader::saveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData)
 {
     if(chunkNumber == 0)
     {
-        StartDownload(songMetaData);
+        startDownload(songMetaData);
         m_downloadStatus = FileDownloader::DownloadStarted;
         return m_downloadStatus;
     }

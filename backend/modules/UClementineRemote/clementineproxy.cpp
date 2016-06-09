@@ -37,7 +37,7 @@ void ClementineProxy::checkDownloadQueue()
     {
         int playListId;
         QString songUrl;
-        if(FileDownloader::GetNextDownload(playListId, songUrl))
+        if(FileDownloader::getNextDownload(playListId, songUrl))
         {
             // Set the downloader in a wait state
             FileDownloader::newDownloadRequested();
@@ -102,10 +102,20 @@ void ClementineProxy::playSong(int songIndex, int playListId)
     }
 }
 
+bool ClementineProxy::isDownloadQueueEmpty()
+{
+    return FileDownloader::isDownloadQueueEmpty();
+}
+
+int ClementineProxy::downloadQueueSize()
+{
+    FileDownloader::downloadQueueSize();
+}
+
 void ClementineProxy::downloadSong(int playListId, QString songUrl)
 {
     // Register this download and let the file downloader to handle it
-    FileDownloader::RegisterDownload(playListId, songUrl);
+    FileDownloader::registerDownload(playListId, songUrl);
 }
 
 void ClementineProxy::requestDownloadSong(int playListId, QString songUrl)
@@ -255,9 +265,8 @@ void ClementineProxy::onConnected()
         m_clientSocket.flush();
 
         // Start the download queue timer
-        qDebug() << "Timer started ==============";
         m_timer.start(5000);
-        FileDownloader::SetDownloadDirectory("/home/black/Downloads/test/");
+        FileDownloader::setDownloadDirectory("/home/black/Downloads/test/");
     }
 }
 
@@ -400,7 +409,7 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
 
 void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk)
 {
-    FileDownloader::DownloadStatus downloadStatus = FileDownloader::SaveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size(), songFileChunk.song_metadata());
+    FileDownloader::DownloadStatus downloadStatus = FileDownloader::saveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size(), songFileChunk.song_metadata());
 
     if(downloadStatus == FileDownloader::DownloadStarted)
     {
