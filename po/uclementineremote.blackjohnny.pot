@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-09 19:05+0300\n"
+"POT-Creation-Date: 2016-06-09 20:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,19 +21,19 @@ msgstr ""
 msgid "Downloading"
 msgstr ""
 
-#: ../app/Main.qml:129
+#: ../app/Main.qml:134
 msgid "Waiting for the next file ..."
 msgstr ""
 
-#: ../app/Main.qml:136
+#: ../app/Main.qml:141
 msgid "Idle"
 msgstr ""
 
-#: ../app/Main.qml:143
+#: ../app/Main.qml:148
 msgid " in queue)"
 msgstr ""
 
-#: ../app/Main.qml:270
+#: ../app/Main.qml:275
 msgid "Play lists"
 msgstr ""
 

@@ -24,7 +24,6 @@ public:
 
 public:
     static void registerDownload(int playListId, QString songUrl);
-    static void startDownload(const pb::remote::SongMetadata& songMetaData);
     static bool getNextDownload(int& playListId, QString& songUrl);
     static FileDownloader::DownloadStatus getDownloadStatus();
     static bool isDownloadQueueEmpty();
@@ -38,6 +37,7 @@ public:
 
 private:
     void registerDownloadInternal(int playListId, QString songUrl);
+    void startDownload(const pb::remote::SongMetadata& songMetaData);
     FileDownloader::DownloadStatus saveFileChunkInternal(int fileNumber, int chunkNumber, int chunkCount, const char* chunkData, int chunkSize, const pb::remote::SongMetadata& songMetaData);
     bool getNextDownloadInternal(int& playListId, QString& songUrl);
     bool isDownloadQueueEmptyInternal();

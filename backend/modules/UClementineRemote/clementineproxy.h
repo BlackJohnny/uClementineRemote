@@ -31,6 +31,7 @@ public slots:
     void requestPlayLists();
     bool isDownloadQueueEmpty();
     int downloadQueueSize();
+    QString getCacheFolder();
 
 private slots:
     void onConnected();
@@ -76,6 +77,7 @@ protected:
     void setPlayListsItem(PlayLists* playListsItem) { m_playListsItem = playListsItem; }
     bool isConnected() { return m_clientSocket.isOpen(); }
     void play(bool playNext);
+
     QTimer m_timer;
     Song* m_currentSong;
 
@@ -90,6 +92,7 @@ protected:
     QString m_host;
     int m_port;
     int m_authCode;
+    QString m_cacheFolder;
 };
 
 #endif // CLEMENTINEPROXY_H

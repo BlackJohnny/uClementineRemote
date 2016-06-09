@@ -103,15 +103,14 @@ bool FileDownloader::getNextDownloadInternal(int& playListId, QString& songUrl)
 
 void FileDownloader::startDownload(const pb::remote::SongMetadata& songMetaData)
 {
-    if(!m_instance)
-        m_instance = new FileDownloader();
+    if(m_file.isOpen())
+        m_file.close();
 
-    if(m_instance->m_file.isOpen())
-        m_instance->m_file.close();
+    m_currentSongUrl = songMetaData.url().c_str();
+    m_file.setFileName(m_instance->m_destinationDirectory + "/" + songMetaData.filename().c_str());
+    m_file.open(QIODevice::WriteOnly);
 
-    m_instance->m_currentSongUrl = songMetaData.url().c_str();
-    m_instance->m_file.setFileName(m_instance->m_destinationDirectory + songMetaData.filename().c_str());
-    m_instance->m_file.open(QIODevice::WriteOnly);
+    qDebug() << "Saving song to: " << m_file.fileName();
 }
 
 void FileDownloader::Destroy()

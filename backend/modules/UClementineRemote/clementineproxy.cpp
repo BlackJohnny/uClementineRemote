@@ -1,5 +1,9 @@
 #include "clementineproxy.h"
 #include <QtEndian>
+#include <QStandardPaths>
+#include <QDir>
+#include <QCoreApplication>
+
 #include "filedownloader.h"
 
 ClementineProxy::ClementineProxy(QObject *parent) :
@@ -266,8 +270,25 @@ void ClementineProxy::onConnected()
 
         // Start the download queue timer
         m_timer.start(5000);
-        FileDownloader::setDownloadDirectory("/home/black/Downloads/test/");
+        FileDownloader::setDownloadDirectory(getCacheFolder());
     }
+}
+
+QString ClementineProxy::getCacheFolder()
+{
+    if(m_cacheFolder.isEmpty())
+    {
+        QStringList locations = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation);
+
+        if(!locations.isEmpty())
+        {
+            QDir dir;
+            m_cacheFolder = locations.at(0) + "/" + QCoreApplication::applicationName();
+            dir.mkpath(m_cacheFolder);
+        }
+    }
+
+    return m_cacheFolder;
 }
 
 void ClementineProxy::error(QAbstractSocket::SocketError socketError)
