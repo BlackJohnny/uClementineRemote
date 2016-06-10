@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the  package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-09 20:53+0000\n"
+"POT-Creation-Date: 2016-06-10 17:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,50 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../app/DownloadManager.qml:53
+#: ../app/DownloadManager.qml:53 ../app/Main.qml:432
 msgid "Downloading"
 msgstr ""
 
-#: ../app/Main.qml:134
+#: ../app/Main.qml:73
+msgid "Downloads"
+msgstr ""
+
+#: ../app/Main.qml:142
 msgid "Waiting for the next file ..."
 msgstr ""
 
-#: ../app/Main.qml:141
+#: ../app/Main.qml:149
 msgid "Idle"
 msgstr ""
 
-#: ../app/Main.qml:148
+#: ../app/Main.qml:156
 msgid " in queue)"
 msgstr ""
 
-#: ../app/Main.qml:275
+#: ../app/Main.qml:285
 msgid "Play lists"
 msgstr ""
 
-#: /home/black/repo/build-uClementineRemote-UbuntuSDK_for_armhf_GCC_ubuntu_sdk_15_04_vivid-Default/po/uClementineRemote.desktop.in.h:1
+#: ../app/Main.qml:609
+msgid "uClementineRemote settings"
+msgstr ""
+
+#: ../app/Main.qml:644
+msgid "Connection"
+msgstr ""
+
+#: ../app/Main.qml:660
+msgid "Host:"
+msgstr ""
+
+#: ../app/Main.qml:688
+msgid "Port:"
+msgstr ""
+
+#: ../app/Main.qml:715
+msgid "Authentication code:"
+msgstr ""
+
+#: /home/black/repo/uClementineRemote-build/po/uClementineRemote.desktop.in.h:1
 msgid "uClementineRemote"
 msgstr ""

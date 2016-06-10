@@ -27,63 +27,71 @@ MainView {
         {
             id: mainPage
 
-            header:
-                PageHeader
-                {
-                    id: pageHeader
-                    title: "uClementineRemote"
-                    z: 151
-                    leadingActionBar.actions: [
-                        Action
+            header: PageHeader
+            {
+                id: pageHeader
+                title: "uClementineRemote"
+                z: 151
+                leadingActionBar.actions: [
+                    Action
+                    {
+                        iconName: "contact"
+                        text: "Connect"
+                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
+                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
+                        //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
+                    },
+                    Action
+                    {
+                        iconName: "quit"
+                        text: "Play lists"
+                        onTriggered:
                         {
-                            iconName: "contact"
-                            text: "Connect"
-                            onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                            //onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
-                            //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
-                        },
-                        Action
-                        {
-                            iconName: "quit"
-                            text: "Play lists"
-                            onTriggered:
-                            {
-                                slideView.z = 100;
-                                slideView.showMenu();
-                            }
-                        },
-                        Action
-                        {
-                            iconName: "quit"
-                            text: "Quit"
+                            slideView.z = 100;
+                            slideView.showMenu();
                         }
-                    ]
-                    trailingActionBar.actions: [
-                        Action
-                        {
-                            iconName: "settings"
-                            text: "First"
-                        },
-                        Action
-                        {
-                            iconName: "info"
-                            text: "Second"
-                        },
-                        Action
-                        {
-                            iconName: "search"
-                            text: "Second"
-                        }
-                    ]
-
-                    StyleHints {
-                        foregroundColor: UbuntuColors.orange
-                        backgroundColor: UbuntuColors.porcelain
-                        dividerColor: UbuntuColors.slate
+                    },
+                    Action
+                    {
+                        iconName: "quit"
+                        text: "Quit"
                     }
-                }
+                ]
+                trailingActionBar.actions: [
+                    Action
+                    {
+                        iconName: "settings"
+                        text: "First"
+                        onTriggered:
+                        {
+                            pageStack.push(settingsPage);
+                        }
+                    },
+                    Action
+                    {
+                        iconSource: "assets/download.svg"
+                        text: i18n.tr("Downloads")
+                        onTriggered:
+                        {
+                            slideViewTop.showMenu();
+                        }
+                    },
+                    Action
+                    {
+                        iconName: "search"
+                        text: "Second"
+                    }
+                ]
 
-            ClementineProxy {
+                StyleHints {
+                    foregroundColor: UbuntuColors.orange
+                    backgroundColor: UbuntuColors.porcelain
+                    dividerColor: UbuntuColors.slate
+                }
+            }
+
+            ClementineProxy
+            {
                 id: clementineProxy
                 property int propDownloadQueueSize
 
@@ -193,7 +201,8 @@ MainView {
                 }
             }
 
-            SlideView {
+            SlideView
+            {
                 id: slideViewTop
                 sliderPosition: Qt.TopEdge
                 backgroundColor: "transparent"
@@ -227,7 +236,8 @@ MainView {
                 }
             }
 
-            SlideView {
+            SlideView
+            {
                 id: slideView
                 z: 100
                 sliderPosition: Qt.LeftEdge
@@ -419,6 +429,7 @@ MainView {
                         z: 10
                         onClicked:
                         {
+                            downloadManager.downloadTitle = i18n.tr("Downloading");
                             clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
                             clementineProxy.propDownloadQueueSize = clementineProxy.downloadQueueSize();
                             slideViewTop.visible = true;
@@ -585,6 +596,136 @@ MainView {
                 visible: true
                 anchors.fill: transferSongFilePage
                 activeTransfer: transferSongFilePage.activeTransfer
+            }
+        }
+
+        Page
+        {
+            id: settingsPage
+
+            header: PageHeader
+            {
+                id: settingsPageHeader
+                title: i18n.tr("uClementineRemote settings")
+                z: 151
+
+                StyleHints {
+                    foregroundColor: UbuntuColors.orange
+                    backgroundColor: UbuntuColors.porcelain
+                    dividerColor: UbuntuColors.slate
+                }
+            }
+
+            visible: false
+
+            Rectangle
+            {
+                id: connectionSection
+                anchors
+                {
+                    top: settingsPageHeader.bottom
+                    left: parent.left
+                    right: parent.right
+                    topMargin: units.gu(1)
+                    leftMargin: units.gu(1)
+                }
+
+                Text
+                {
+                    id: connectionSectionText
+                    anchors
+                    {
+                        top: connectionSection.bottom
+                        left: parent.left
+                        right: parent.right
+                    }
+
+                    font.bold: true
+                    text: i18n.tr("Connection")
+                }
+                Label
+                {
+                    id: hostNameSettingLabel
+                    anchors
+                    {
+                        top: connectionSectionText.bottom
+                        left: parent.left
+                        leftMargin: units.gu(1)
+                        topMargin: units.gu(1)
+                        bottomMargin: units.gu(1)
+                    }
+                    height: hostNameSetting.height
+                    width: authCodeSettingLabel.width
+                    verticalAlignment: Text.AlignVCenter
+                    text: i18n.tr("Host:")
+                }
+                TextField
+                {
+                    id: hostNameSetting
+                    anchors
+                    {
+                        left: hostNameSettingLabel.right
+                        verticalCenter: hostNameSettingLabel.verticalCenter
+                        leftMargin: units.gu(1)
+                    }
+                    maximumLength: 20
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Label
+                {
+                    id: portSettingLabel
+                    anchors
+                    {
+                        top: hostNameSettingLabel.bottom
+                        left: parent.left
+                        leftMargin: units.gu(1)
+                        topMargin: units.gu(1)
+                        bottomMargin: units.gu(1)
+                    }
+                    height: portSetting.height
+                    width: authCodeSettingLabel.width
+                    verticalAlignment: Text.AlignVCenter
+                    text: i18n.tr("Port:")
+                }
+                TextField
+                {
+                    id: portSetting
+                    anchors
+                    {
+                        left: portSettingLabel.right
+                        verticalCenter: portSettingLabel.verticalCenter
+                        leftMargin: units.gu(1)
+                    }
+                    inputMask: "#####"
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Label
+                {
+                    id: authCodeSettingLabel
+                    anchors
+                    {
+                        top: portSettingLabel.bottom
+                        left: parent.left
+                        leftMargin: units.gu(1)
+                        topMargin: units.gu(1)
+                        bottomMargin: units.gu(1)
+                    }
+                    height: authCodeSetting.height
+                    verticalAlignment: Text.AlignVCenter
+                    text: i18n.tr("Authentication code:")
+                }
+                TextField
+                {
+                    id: authCodeSetting
+                    anchors
+                    {
+                        left: authCodeSettingLabel.right
+                        verticalCenter: authCodeSettingLabel.verticalCenter
+                        leftMargin: units.gu(1)
+                    }
+                    inputMask: "#####"
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
         }
     }
