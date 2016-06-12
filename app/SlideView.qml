@@ -49,12 +49,17 @@ import QtGraphicalEffects 1.0
 
 Item {
     id: root
-//color: "yellow"
+
     property alias drawerHeight: menuView.height
     property alias drawerWidth: menuView.width
+
     property alias backgroundColor: backgroundItem.color
     property alias backgroundRadius: backgroundItem.radius
     property alias backgroundOpacity: backgroundItem.opacity
+    property alias border: backgroundItem.border
+
+    property alias buttonWidth: menuButton.buttonWidth
+    property alias buttonHeight: menuButton.buttonHeight
 
     /*! On which side to place the slider.
 
@@ -62,6 +67,11 @@ Item {
     */
     property int sliderPosition: Qt.TopEdge
 
+    /*! The "resting" position of the slide view.
+
+        By default this is set to \c 0.
+    */
+    property int restPosition: 0
 
     /*! Whether the menu is currently visible or not.
     */
@@ -83,19 +93,29 @@ Item {
 
     /*! Shows the menu.
     */
-    function showMenu() {
-        menuVisible = true
+    function showMenu()
+    {
+        console.log(mouseArea.x);
+        menuVisible = true;
+        signalVisible();
     }
 
     /*! Hides the menu.
     */
-    function hideMenu() {
-        menuVisible = false
+    function hideMenu()
+    {
+        console.log(mouseArea.x);
+        menuVisible = false;
+        signalVisible();
+    }
+
+    function isVisible()
+    {
+        return menuVisible;
     }
 
     function signalVisible()
     {
-        console.log("test");
         if(menuVisible)
             shown();
         else
@@ -129,77 +149,8 @@ Item {
         }
     }
 
-    height: menuView.height + menuButton.height + units.gu(2)
-
     SystemPalette {
         id: systemPalette; colorGroup: SystemPalette.Active
-    }
-
-    MouseArea
-    {
-        property int startX: 0
-        property int startY: 0
-
-        property int dragX: pressed ? mouseX - startX : 0
-        property int dragY: pressed ? mouseY - startY : 0
-
-        property int dragThresholdX: menuView.width * 0.1
-        property int dragThresholdY: menuView.height * 0.1
-
-        id: mouseArea
-
-        anchors.fill: menuView.parent
-        z: !menuVisible ? 100 : 0
-
-        onPressed:
-        {
-            startX = mouseX;
-            startY = mouseY;
-        }
-
-        onReleased:
-        {
-            switch(sliderPosition)
-            {
-                case Qt.TopEdge:
-                    if(dragY == 0)
-                        return;
-
-                    if(Math.abs(dragY) > dragThresholdY)
-                    {
-                        if(dragY < 0)
-                            menuVisible = false
-                        else
-                            menuVisible = true
-                    }
-                    break;
-                case Qt.LeftEdge:
-                    if(dragX == 0)
-                        return;
-
-                    if(Math.abs(dragX) > dragThresholdX)
-                    {
-                        if(dragX < 0)
-                            menuVisible = false
-                        else
-                            menuVisible = true
-                    }
-                    break;
-
-                case Qt.RightEdge:
-                    if(dragX == 0)
-                        return;
-
-                    if(Math.abs(dragX) > dragThresholdX)
-                    {
-                        if(dragX > 0)
-                            menuVisible = false
-                        else
-                            menuVisible = true
-                    }
-                    break;
-            }
-        }
     }
 
     Rectangle
@@ -267,9 +218,87 @@ Item {
 
        color: "transparent"
 
-       opacity: 1//viewTranslate.y/height
-       enabled: opacity != 0
+       MouseArea
+       {
+           property int startX: 0
+           property int startY: 0
 
+           property int dragX: pressed ? mouseX - startX : 0
+           property int dragY: pressed ? mouseY - startY : 0
+
+           property int dragThresholdX: menuView.width * 0.1
+           property int dragThresholdY: menuView.height * 0.1
+
+           id: mouseArea
+
+           anchors.fill: parent
+
+//           z: 100
+
+           onPressed:
+           {
+               console.log("click")
+               startX = mouseX;
+               startY = mouseY;
+           }
+
+           onReleased:
+           {
+               switch(sliderPosition)
+               {
+                   case Qt.TopEdge:
+                       if(dragY == restPosition)
+                           return;
+
+                       if(Math.abs(dragY) > dragThresholdY)
+                       {
+                           if(dragY < restPosition)
+                               menuVisible = false
+                           else
+                               menuVisible = true
+                       }
+                       break;
+                   case Qt.LeftEdge:
+                       if(dragX == restPosition)
+                           return;
+
+                       if(Math.abs(dragX) > dragThresholdX)
+                       {
+                           if(dragX < restPosition)
+                               menuVisible = false
+                           else
+                               menuVisible = true
+                       }
+                       break;
+
+                   case Qt.RightEdge:
+                       if(dragX == restPosition)
+                           return;
+
+                       if(Math.abs(dragX) > dragThresholdX)
+                       {
+                           if(dragX > restPosition)
+                               menuVisible = false
+                           else
+                               menuVisible = true
+                       }
+                       break;
+
+                   case Qt.BottomEdge:
+                       if(dragY == restPosition)
+                           return;
+
+                       if(Math.abs(dragY) > dragThresholdY)
+                       {
+                           if(dragY > restPosition)
+                               menuVisible = false
+                           else
+                               menuVisible = true
+                       }
+                       break;
+               }
+           }
+       }
        Rectangle
        {
            id: backgroundItem
@@ -280,7 +309,7 @@ Item {
                right: parent.right
            }
 
-           anchors.rightMargin: sliderPosition == Qt.RightEdge ? -root._radius : 0;
+           anchors.rightMargin: (sliderPosition == Qt.RightEdge ? -root._radius : 0) + 10;
            anchors.topMargin: sliderPosition == Qt.TopEdge ? -root._radius : 0;
            anchors.leftMargin: sliderPosition == Qt.LeftEdge ? -root._radius : 0;
            anchors.bottomMargin: sliderPosition == Qt.BottomEdge ? -root._radius : 0;
@@ -296,24 +325,25 @@ Item {
                    id: viewTranslate
 
                    // signal show/hidden
-                   onXChanged: if(x == 0 && (sliderPosition == Qt.LeftEdge || sliderPosition == Qt.RightEdge )) { signalVisible(); }
-                   onYChanged: if(y == 0 && (sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge )) { signalVisible(); }
+                   onXChanged: if(x == restPosition && (sliderPosition == Qt.LeftEdge || sliderPosition == Qt.RightEdge )) { signalVisible(); }
+                   onYChanged: if(y == restPosition && (sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge )) { signalVisible(); }
 
                    x: {
                        if(sliderPosition == Qt.LeftEdge)
-                           return menuVisible ? Math.max(0, menuView.width + Math.min(0, mouseArea.dragX)) :  Math.min(menuView.width, Math.max(0, mouseArea.dragX));
+                           return menuVisible ? Math.max(0, menuView.width + Math.min(0, mouseArea.dragX)) :  restPosition + Math.min(menuView.width, Math.max(0, mouseArea.dragX));
                        else if(sliderPosition == Qt.RightEdge)
-                           return menuVisible ? Math.max(-menuView.width, -menuView.width + Math.min(menuView.width, mouseArea.dragX)) :  Math.min(0, Math.max(-menuView.width, mouseArea.dragX));
+                           return menuVisible ? Math.max(-menuView.width, -menuView.width + Math.min(menuView.width, mouseArea.dragX)) :  -restPosition + Math.min(0, Math.max(-menuView.width, mouseArea.dragX));
 
                        return 0;
                    }
 
                    y: {
-                       // TODO: update for BottomEdge
-                       if(sliderPosition != Qt.TopEdge)
-                           return 0;
+                       if(sliderPosition == Qt.TopEdge)
+                           return menuVisible ? Math.max(0, menuView.height + Math.min(0, mouseArea.dragY)) :  restPosition + Math.min(menuView.height, Math.max(0, mouseArea.dragY));
+                       else if(sliderPosition == Qt.BottomEdge)
+                           return menuVisible ? Math.max(-menuView.height, -menuView.height + Math.min(menuView.height, mouseArea.dragY)) :  -restPosition + Math.min(0, Math.max(-menuView.height, mouseArea.dragY));
 
-                       return menuVisible ? Math.max(0, menuView.height + Math.min(0, mouseArea.dragY)) :  Math.min(menuView.height, Math.max(0, mouseArea.dragY));
+                       return 0;
                    }
                    Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuad; } }
                    Behavior on y { NumberAnimation { duration: 400; easing.type: Easing.OutQuad; } }
@@ -323,108 +353,216 @@ Item {
     Rectangle
     {
         id: menuButton
-        width: {
+
+        property real buttonWidth: {
             if(sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge)
                 return Screen.pixelDensity * 10;
             else
                 return Screen.pixelDensity * 2;
         }
-        height: {
+        property real buttonHeight: {
             if(sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge)
                 return Screen.pixelDensity * 2;
             else
                 return Screen.pixelDensity * 10;
         }
+
+        width:
+        {
+            if(sliderPosition == Qt.LeftEdge || sliderPosition == Qt.RightEdge) return buttonWidth;
+        }
+
+        height:
+        {
+            if(sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge) return buttonHeight;
+        }
+
         color: "transparent"
-        opacity: 0.8
-        z: 0
+        opacity: 1
 
-        anchors {
-                    horizontalCenter:
-                    {
-                        switch(sliderPosition)
+        anchors
+        {
+            top:
+            {
+                if(sliderPosition == Qt.TopEdge)
+                    return menuView.bottom;
+
+                if(sliderPosition == Qt.BottomEdge)
+                    return;
+
+                return parent.top;
+            }
+
+            left:
+            {
+                if(sliderPosition == Qt.LeftEdge)
+                    return menuView.right;
+
+                return parent.left;
+            }
+
+            right:
+            {
+                if(sliderPosition == Qt.RightEdge)
+                    return menuView.left;
+
+                return parent.right;
+            }
+
+            bottom:
+            {
+                if(sliderPosition == Qt.BottomEdge)
+                    return menuView.top;
+
+                if(sliderPosition == Qt.TopEdge)
+                    return;
+
+                return parent.bottom;
+            }
+
+            margins: 0
+        }
+
+        transform: Translate
+        {
+            id: menuButtonTranslate
+            y:
+            {
+                if(sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge)
+                    return viewTranslate.y;
+
+                return 0.0;
+            }
+            x:
+            {
+                if(sliderPosition == Qt.LeftEdge || sliderPosition == Qt.RightEdge)
+                    return viewTranslate.x;
+
+                return 0.0;
+            }
+        }
+/*
+        MouseArea
+        {
+            property int startX: 0
+            property int startY: 0
+
+            property int dragX: pressed ? mouseX - startX : 0
+            property int dragY: pressed ? mouseY - startY : 0
+
+            property int dragThresholdX: menuView.width * 0.1
+            property int dragThresholdY: menuView.height * 0.1
+
+            id: mouseArea
+
+            anchors.fill: parent
+
+            z: 10
+            //z: !menuVisible ? 100 : 0
+            onPressed:
+            {
+                startX = mouseX;
+                startY = mouseY;
+            }
+
+            onReleased:
+            {
+                switch(sliderPosition)
+                {
+                    case Qt.TopEdge:
+                        if(dragY == restPosition)
+                            return;
+
+                        if(Math.abs(dragY) > dragThresholdY)
                         {
-                             case Qt.TopEdge:
-                                 return menuView.horizontalCenter;
-                             case Qt.LeftEdge:
-                                 return;
-                             case Qt.RightEdge:
-                                 return;
-                             case Qt.BottomEdge:
-                                 return menuView.horizontalCenter;
+                            if(dragY < restPosition)
+                                menuVisible = false
+                            else
+                                menuVisible = true
                         }
-                    }
-                    verticalCenter:
-                    {
-                        switch(sliderPosition)
+                        break;
+                    case Qt.LeftEdge:
+                        if(dragX == restPosition)
+                            return;
+
+                        if(Math.abs(dragX) > dragThresholdX)
                         {
-                             case Qt.TopEdge:
-                                 return;
-                             case Qt.LeftEdge:
-                                 return menuView.verticalCenter;
-                             case Qt.RightEdge:
-                                 return menuView.verticalCenter;
-                             case Qt.BottomEdge:
-                                 return;
+                            if(dragX < restPosition)
+                                menuVisible = false
+                            else
+                                menuVisible = true
                         }
-                    }
+                        break;
 
-                    top:
-                    {
-                        if(sliderPosition == Qt.TopEdge)
-                            return menuView.bottom;
+                    case Qt.RightEdge:
+                        if(dragX == restPosition)
+                            return;
 
-                        return;
-                    }
-                    left:
-                    {
-                        if(sliderPosition == Qt.LeftEdge)
-                            return menuView.right;
+                        if(Math.abs(dragX) > dragThresholdX)
+                        {
+                            if(dragX > restPosition)
+                                menuVisible = false
+                            else
+                                menuVisible = true
+                        }
+                        break;
 
-                        return;
-                    }
-                    right:
-                    {
-                        if(sliderPosition == Qt.RightEdge)
-                            return menuView.left;
+                    case Qt.BottomEdge:
+                        if(dragY == restPosition)
+                            return;
 
-                        return;
-                    }
-                    bottom:
-                    {
-                        if(sliderPosition == Qt.BottomEdge)
-                            return menuView.top;
-
-                        return;
-                    }
-
-                    margins: 0
+                        if(Math.abs(dragY) > dragThresholdY)
+                        {
+                            if(dragY > restPosition)
+                                menuVisible = false
+                            else
+                                menuVisible = true
+                        }
+                        break;
                 }
-        transform: Translate {
-                    id: menuButtonTranslate
-                    y:
-                    {
-                        if(sliderPosition == Qt.TopEdge || sliderPosition == Qt.BottomEdge)
-                            return viewTranslate.y;
-
-                        return 0.0;
-                    }
-                    x:
-                    {
-                        if(sliderPosition == Qt.LeftEdge || sliderPosition == Qt.RightEdge)
-                            return viewTranslate.x;
-
-                        return 0.0;
-                    }
-                }
-
+            }
+        }
+*/
         Image
         {
             id: buttonImage
-            anchors.fill: menuButton
+            width: parent.buttonWidth
+            height: parent.buttonHeight
             smooth: true
-            sourceSize.width: menuButton.width
-            sourceSize.height: menuButton.height
+            sourceSize.width: menuButton.buttonWidth
+            sourceSize.height: menuButton.buttonHeight
+            anchors
+            {
+                horizontalCenter:
+                {
+                    switch(sliderPosition)
+                    {
+                         case Qt.TopEdge:
+                             return parent.horizontalCenter;
+                         case Qt.LeftEdge:
+                             return;
+                         case Qt.RightEdge:
+                             return;
+                         case Qt.BottomEdge:
+                             return parent.horizontalCenter;
+                    }
+                }
+
+                verticalCenter:
+                {
+                    switch(sliderPosition)
+                    {
+                         case Qt.TopEdge:
+                             return;
+                         case Qt.LeftEdge:
+                             return parent.verticalCenter;
+                         case Qt.RightEdge:
+                             return parent.verticalCenter;
+                         case Qt.BottomEdge:
+                             return;
+                    }
+                }
+            }
             source:
             {
                 switch(sliderPosition)
@@ -439,15 +577,14 @@ Item {
                          return "assets/slider-top.svg";
                 }
             }
-            visible: false
+            visible: true
         }
-        ColorOverlay {
+/*        ColorOverlay {
             anchors.fill: buttonImage
             source: buttonImage
             color: "gray"
             cached: true
-            //visible: sliderPosition == Qt.TopEdge ? true : false
-        }
+        }*/
     }
 
     onChildrenChanged: _updateItems()

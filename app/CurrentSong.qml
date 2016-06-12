@@ -29,18 +29,31 @@ Rectangle {
     id: root
     property alias title: songTitle.text
     property int songLength: 0
+    property alias art: artImage
 
     function setSongPosition(position)
     {
         songProgress.width = (songProgress.parent.width * position) / songLength;
     }
+    function onParentXChanged(parentX)
+    {
+        console.log(parentX)
+    }
+
+    Component.onCompleted: {
+        root.parent.onYChanged.connect(onParentXChanged);
+    }
 
     signal clickNext()
     signal clickPrev()
+    signal playPause()
 
     Rectangle
     {
         id: progressBar
+        border.width: 1
+        height: 4
+        border.color: UbuntuColors.orange
         anchors
         {
             left: parent.left
@@ -53,6 +66,7 @@ Rectangle {
         {
             id: songProgress
             color: UbuntuColors.orange
+
             anchors
             {
                 left: parent.left
@@ -74,7 +88,7 @@ Rectangle {
             bottom: parent.bottom
         }
 
-        height: parent.height - Screen.pixelDensity*0.5
+        height: parent.height - progressBar.height
 
         ButtonSvg
         {
@@ -129,6 +143,56 @@ Rectangle {
             onClicked:
             {
                 clickNext();
+            }
+        }
+
+        ButtonSvg
+        {
+            id: buttonPlay
+            anchors
+            {
+                top: songTitle.bottom
+                horizontalCenter: parent.horizontalCenter
+            }
+
+            svg: "assets/play.svg"
+            iconHeight: parent.height * 0.8
+            iconWidth:  parent.height * 0.8
+
+            onClicked:
+            {
+                if(buttonPlay.svg.toString().indexOf("assets/play.svg") != -1)
+                    buttonPlay.svg = "assets/pause.svg";
+                else
+                    buttonPlay.svg = "assets/play.svg";
+
+                playPause();
+            }
+        }
+        Image
+        {
+            id: artImage
+            smooth: true
+            anchors
+            {
+                top: buttonPlay.bottom
+                topMargin: units.gu(1)
+                horizontalCenter: parent.horizontalCenter
+            }
+
+            height:
+            {
+                if(sourceSize.height > sourceSize.width)
+                    return units.gu(30);
+                else
+                    return (width/sourceSize.width)*sourceSize.height;
+            }
+            width:
+            {
+                if(sourceSize.height > sourceSize.width)
+                    (height/sourceSize.height)*sourceSize.width;
+                else
+                    return units.gu(30);
             }
         }
     }

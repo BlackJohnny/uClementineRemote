@@ -6,6 +6,7 @@
 #include <QMutex>
 #include <QSharedPointer>
 #include <QTimer>
+#include <QQuickImageProvider>
 
 #include "playlists.h"
 #include "playlist.h"
@@ -13,7 +14,8 @@
 
 #include "remotecontrolmessages.pb.h"
 
-class ClementineProxy : public QObject
+class ClementineProxy :
+        public QObject
 {
     Q_OBJECT
     Q_PROPERTY( PlayLists* playLists WRITE setPlayListsItem )
@@ -21,8 +23,10 @@ class ClementineProxy : public QObject
 
 public slots:
     void connectRemote(QString host, int port, int authCode);
+    void disconnect();
     void playNext();
     void playPrev();
+    void playPause();
     void playSong(int songIndex, int playListId);
     void downloadSong(int playListId, QString songUrl);
     void sendResponseSongOffer();
@@ -50,13 +54,22 @@ public:
 
     Q_ENUMS(ConnectionStatus)
 
+    enum PlayerStatus
+    {
+        Stopped,
+        Playing,
+        Paused
+    };
+
+    Q_ENUMS(PlayerStatus)
+
 Q_SIGNALS:
     void connectionStatusChanged(ConnectionStatus connectionStatus);
     void updatePlayLists(QVariantList playLists);
     void activeSongChanged(Song* song); // this event might happen when there is no play list loaded
     void updateSongPosition(int position);
     void updateDownloadProgress(int chunk, int chunks, QString songFileName);
-
+    void updatePlayerStatus(PlayerStatus playerStatus);
     void communicationError(QString error);
 
 public:
@@ -93,6 +106,7 @@ protected:
     int m_port;
     int m_authCode;
     QString m_cacheFolder;
+    QImage m_currentArt;
 };
 
 #endif // CLEMENTINEPROXY_H

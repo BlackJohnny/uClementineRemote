@@ -54,7 +54,6 @@ Rectangle {
         anchors
         {
             left: parent.left
-            //right: parent.right
             top: parent.top
             topMargin: units.gu(1)
             leftMargin: units.gu(1)
@@ -90,6 +89,7 @@ Rectangle {
             leftMargin: units.gu(5)
             rightMargin: units.gu(5)
         }
+        text: "..."
         elide: Text.ElideRight
         verticalAlignment: Text.AlignVCenter
         font.pixelSize: FontUtils.modularScale("small") * units.dp(20)

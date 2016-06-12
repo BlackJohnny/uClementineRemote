@@ -3,8 +3,10 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QCoreApplication>
+#include <QQmlContext>
 
 #include "filedownloader.h"
+#include "artimageprovider.h"
 
 ClementineProxy::ClementineProxy(QObject *parent) :
     QObject(parent),
@@ -61,6 +63,14 @@ void ClementineProxy::connectRemote(QString host, int port, int authCode)
     m_clientSocket.connectToHost(host, port);
 
     emit connectionStatusChanged(Connecting);
+}
+
+void ClementineProxy::disconnect()
+{
+    if(m_clientSocket.isOpen())
+        m_clientSocket.close();
+
+    emit connectionStatusChanged(Disconnected);
 }
 
 void ClementineProxy::playNext()
@@ -238,6 +248,24 @@ void ClementineProxy::play(bool playNext)
     }
 }
 
+void ClementineProxy::playPause()
+{
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::PLAYPAUSE);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+    }
+}
 void ClementineProxy::onConnected()
 {
     qDebug() << "Connected";
@@ -361,15 +389,15 @@ void ClementineProxy::processMessage(pb::remote::Message message)
             break;
         case pb::remote::PLAY:
             qDebug() << "New message: PLAY";
-            //App.Clementine.setState(Clementine.State.PLAY);
+            emit updatePlayerStatus(ClementineProxy::Playing);
             break;
         case pb::remote::PAUSE:
             qDebug() << "New message: PAUSE";
-            //App.Clementine.setState(Clementine.State.PAUSE);
+            emit updatePlayerStatus(ClementineProxy::Paused);
             break;
         case pb::remote::STOP:
             qDebug() << "New message: STOP";
-            //App.Clementine.setState(Clementine.State.STOP);
+            emit updatePlayerStatus(ClementineProxy::Stopped);
             break;
         case pb::remote::DISCONNECT:
             qDebug() << "New message: DISCONNECT";
@@ -424,6 +452,8 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
         delete m_currentSong;
 
     m_currentSong = new Song(currentMetadata.song_metadata());
+
+    ArtImageProvider::setCurrentImageData(m_currentSong->art());
 
     emit activeSongChanged(m_currentSong);
 }

@@ -2,6 +2,7 @@ import QtQuick 2.4
 import Ubuntu.Components 1.3
 import QtQuick.Window 2.2
 import Ubuntu.Content 1.3
+import QtQuick.LocalStorage 2.0
 import UClementineRemote 1.0
 
 /*!
@@ -35,26 +36,23 @@ MainView {
                 leadingActionBar.actions: [
                     Action
                     {
+                        id: actionConnect
                         iconName: "contact"
-                        text: "Connect"
-                        //onTriggered: clementineProxy.connectRemote("192.168.1.11", 5500, 0);
-                        onTriggered: clementineProxy.connectRemote("192.168.0.9", 5500, 0);
-                        //onTriggered: clementineProxy.connectRemote("10.42.0.1", 5500, 0);
-                    },
-                    Action
-                    {
-                        iconName: "quit"
-                        text: "Play lists"
+                        text: i18n.tr("Connect")
+
                         onTriggered:
                         {
-                            slideView.z = 100;
-                            slideView.showMenu();
+                            if(clementineProxy.isConnected)
+                                clementineProxy.disconnect();
+                            else
+                                clementineProxy.connectRemote(settingsPage.hostName, settingsPage.port, settingsPage.authCode);
                         }
                     },
                     Action
                     {
                         iconName: "quit"
                         text: "Quit"
+                        onTriggered: Qt.quit();
                     }
                 ]
                 trailingActionBar.actions: [
@@ -69,11 +67,11 @@ MainView {
                     },
                     Action
                     {
-                        iconSource: "assets/download.svg"
-                        text: i18n.tr("Downloads")
+                        iconSource: "assets/playlists.svg"
+                        text: "Play lists"
                         onTriggered:
                         {
-                            slideViewTop.showMenu();
+                            slideViewPlayLists.isVisible() ? slideViewPlayLists.hideMenu() : slideViewPlayLists.showMenu();
                         }
                     },
                     Action
@@ -95,8 +93,10 @@ MainView {
                 id: clementineProxy
                 property int propDownloadQueueSize
 
-                Component.onCompleted: {
+                Component.onCompleted:
+                {
                     clementineProxy.playLists = playLists;
+                    clementineProxy.onUpdatePlayerStatus.connect(currentSong.onPlayerStatus);
                 }
 
                 onUpdatePlayLists:
@@ -114,6 +114,7 @@ MainView {
                 {
                     currentSong.title = song.title;
                     currentSong.songLength = song.length;
+                    currentSong.art.source = "image://songArt/current" + Math.random();
                 }
 
                 onUpdateSongPosition:
@@ -146,9 +147,9 @@ MainView {
                     if(propDownloadQueueSize === 0)
                     {
                         downloadManager.setDownloadQueueSizeInfo("");
-                        downloadManager.downloadTitle = i18n.tr("Idle");
-                        slideViewTop.hideMenu();
-                        slideViewTop.visible = false;
+                        downloadManager.downloadTitle = "...";
+                        slideViewDownloader.hideMenu();
+                        slideViewDownloader.visible = false;
                     }
                     else
                     {
@@ -162,6 +163,29 @@ MainView {
                 onConnectionStatusChanged:
                 {
                     // TODO add GUI for connection status
+                    switch(connectionStatus)
+                    {
+                        case ClementineProxy.Connecting:
+                            actionConnect.text = i18n.tr("Connecting ...");
+                            actionConnect.enabled = false;
+                            break;
+
+                        case ClementineProxy.Connected:
+                            actionConnect.text = i18n.tr("Disconnect");
+                            actionConnect.enabled = true;
+                            break;
+
+                        case ClementineProxy.Disconnected:
+                            actionConnect.text = i18n.tr("Connect");
+                            actionConnect.enabled = true;
+                            break;
+
+                        case ClementineProxy.ConnectionError:
+                            actionConnect.text = i18n.tr("Connect");
+                            actionConnect.enabled = true;
+                            break;
+
+                    }
                 }
             }
 
@@ -203,7 +227,7 @@ MainView {
 
             SlideView
             {
-                id: slideViewTop
+                id: slideViewDownloader
                 sliderPosition: Qt.TopEdge
                 backgroundColor: "transparent"
                 menuVisible: false
@@ -216,7 +240,7 @@ MainView {
                 visible: false
                 autoHideMenu: false
                 drawerHeight: downloadManager.height + units.gu(1) // add the top margin from the DownloadManager
-                drawerWidth: downloadManager.width
+                drawerWidth: parent.width
                 z: 150
 
                 DownloadManager
@@ -238,25 +262,29 @@ MainView {
 
             SlideView
             {
-                id: slideView
+                id: slideViewPlayLists
                 z: 100
                 sliderPosition: Qt.LeftEdge
                 menuVisible: false
                 buttonVisible: false
 
-                anchors {
+                anchors
+                {
+                    top: pageHeader.bottom
                     left: parent.left
                     right: parent.right
-                    bottom: parent.bottom
+                    topMargin: units.gu(2)
                 }
 
                 backgroundColor: "#F0F0F0"
                 backgroundOpacity: 1.0
+                border.color: UbuntuColors.orange
+                border.width: 1
 
                 autoHideMenu: false
                 drawerWidth: parent.width * 0.8
-
-                height: parent.height - pageHeader.height
+                drawerHeight: height
+                height: parent.height - pageHeader.height - currentSong.height - units.gu(4)
 
                 onShown:
                 {
@@ -311,7 +339,7 @@ MainView {
                         left: parent.left
                         right: parent.right
                         leftMargin: units.gu(2)
-                        rightMargin: units.gu(2)
+                        rightMargin: units.gu(10)
                     }
                     highlight: highlightPlayLists
                     height: parent.height
@@ -321,13 +349,15 @@ MainView {
                         width: parent.width
                         height: label.height*1.5
                         property int playListId: id
-                        Text {
+                        Text
+                        {
                             id: label
                             text: name
                             anchors.verticalCenter: parent.verticalCenter
                             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
                         }
-                        MouseArea {
+                        MouseArea
+                        {
                             id: mouseArea
                             z: 1
                             hoverEnabled: false
@@ -372,7 +402,8 @@ MainView {
             {
                 id: highlight
 
-                Rectangle {
+                Rectangle
+                {
 
                     id: highlightContainer
                     width: listViewPlayList.currentItem.width;
@@ -429,11 +460,10 @@ MainView {
                         z: 10
                         onClicked:
                         {
-                            downloadManager.downloadTitle = i18n.tr("Downloading");
                             clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
                             clementineProxy.propDownloadQueueSize = clementineProxy.downloadQueueSize();
-                            slideViewTop.visible = true;
-                            slideViewTop.showMenu();
+                            slideViewDownloader.visible = true;
+                            slideViewDownloader.showMenu();
                         }
                     }
                 }
@@ -447,13 +477,13 @@ MainView {
                     top: currentPlayListName.bottom
                     left: parent.left
                     right: parent.right
-                    bottom: currentSong.top
+                    bottom: parent.bottom
                     leftMargin: units.gu(2)
                     rightMargin: units.gu(2)
+                    bottomMargin: currentSong.height
                 }
                 highlight: highlight
                 highlightFollowsCurrentItem: false
-
                 model: currentPlayListModel
 
                 focus: true
@@ -508,25 +538,70 @@ MainView {
                 id: currentPlayListModel
             }
 
-            CurrentSong
+            SlideView
             {
-                id: currentSong
-
-                anchors {
+                id: slideViewCurrentSong
+                sliderPosition: Qt.BottomEdge
+                backgroundColor: "white"
+                backgroundOpacity: 1.0
+                restPosition: currentSong.height
+                menuVisible: false
+                anchors
+                {
                     left: parent.left
                     right: parent.right
                     bottom: parent.bottom
                 }
+                visible: true
+                autoHideMenu: false
+                drawerHeight: parent.height/2 + units.gu(1)
+                drawerWidth: parent.width
 
-                height: Screen.pixelDensity*10
+                z: 150
 
-                onClickNext:
+                CurrentSong
                 {
-                    clementineProxy.playNext();
-                }
-                onClickPrev:
-                {
-                    clementineProxy.playPrev();
+                    id: currentSong
+
+                    function onPlayerStatus(playerStatus)
+                    {
+                        switch(playerStatus)
+                        {
+                            case ClementineProxy.Playing:
+                                console.log("playing");
+                                break;
+                            case ClementineProxy.Paused:
+                                console.log("paused");
+                                break;
+                            case ClementineProxy.Stopped:
+                                console.log("stopped");
+                                break;
+                        }
+                    }
+
+                    z: slideViewCurrentSong.dragAreaZ + 100
+                    anchors
+                    {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                    }
+
+                    height: units.gu(5)
+
+                    onClickNext:
+                    {
+                        clementineProxy.playNext();
+                    }
+                    onClickPrev:
+                    {
+                        clementineProxy.playPrev();
+                    }
+
+                    onPlayPause:
+                    {
+                        clementineProxy.playPause();
+                    }
                 }
             }
         }
@@ -603,6 +678,78 @@ MainView {
         {
             id: settingsPage
 
+            property alias hostName: hostNameSetting.text
+            property alias port: portSetting.text
+            property alias authCode: authCodeSetting.text
+
+            Component.onCompleted: loadSettings();
+
+            function loadSettings()
+            {
+                var db = LocalStorage.openDatabaseSync("uClementineRemote", "1.0", "uClementineRemote!", 100000);
+                db.transaction(
+                    function(tx) {
+                        // Create the tables they dont exist
+                        tx.executeSql('CREATE TABLE IF NOT EXISTS Settings(qmlId TEXT NOT NULL, qmlProperty TEXT NOT NULL, qmlValue TEXT)');
+
+                        // Get all the settings
+                        var rs = tx.executeSql('SELECT * FROM Settings');
+
+                        var qmlObject;
+
+                        for(var row = 0; row < rs.rows.length; row++)
+                        {
+                            var items = settingsPage.children;
+
+                            for (var i = 0; i < items.length; i++)
+                            {
+                                qmlObject = items[i];
+
+                                if(qmlObject)
+                                {
+                                    if(rs.rows.item(row).qmlId === qmlObject.qmlId)
+                                    {
+                                        qmlObject[rs.rows.item(row).qmlProperty] = rs.rows.item(row).qmlValue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+
+            function saveSettings()
+            {
+                var db = LocalStorage.openDatabaseSync("uClementineRemote", "1.0", "uClementineRemote!", 100000);
+                db.transaction(
+                    function(tx) {
+                        // Create the tables they dont exist
+                        tx.executeSql('CREATE TABLE IF NOT EXISTS Settings(qmlId TEXT NOT NULL, qmlProperty TEXT NOT NULL, qmlValue TEXT)');
+
+                        // Get all the chains
+                        var rs = tx.executeSql('DELETE FROM Settings');
+
+                        var qmlObject;
+                        var items = settingsPage.children;
+
+                        for (var i = 0; i < items.length; i++)
+                        {
+                            qmlObject = items[i];
+
+                            if(qmlObject.qmlId)
+                            {
+                                console.log("Save setting: " + qmlObject.qmlId);
+                                tx.executeSql('INSERT INTO Settings(qmlId, qmlProperty, qmlValue) VALUES(?,?,?)', [
+                                                qmlObject.qmlId,
+                                                qmlObject.qmlProperty,
+                                                qmlObject[qmlObject.qmlProperty]
+                                              ]);
+                            }
+                        }
+                    }
+                )
+            }
+
             header: PageHeader
             {
                 id: settingsPageHeader
@@ -618,9 +765,16 @@ MainView {
 
             visible: false
 
-            Rectangle
+            onVisibleChanged:
             {
-                id: connectionSection
+                if(!settingsPage.visible)
+                    settingsPage.saveSettings();
+            }
+
+            Text
+            {
+                id: connectionSectionText
+
                 anchors
                 {
                     top: settingsPageHeader.bottom
@@ -630,101 +784,139 @@ MainView {
                     leftMargin: units.gu(1)
                 }
 
-                Text
-                {
-                    id: connectionSectionText
-                    anchors
-                    {
-                        top: connectionSection.bottom
-                        left: parent.left
-                        right: parent.right
-                    }
+                font.bold: true
+                text: i18n.tr("Connection")
 
-                    font.bold: true
-                    text: i18n.tr("Connection")
-                }
-                Label
+            }
+            Label
+            {
+                id: hostNameSettingLabel
+                anchors
                 {
-                    id: hostNameSettingLabel
-                    anchors
-                    {
-                        top: connectionSectionText.bottom
-                        left: parent.left
-                        leftMargin: units.gu(1)
-                        topMargin: units.gu(1)
-                        bottomMargin: units.gu(1)
-                    }
-                    height: hostNameSetting.height
-                    width: authCodeSettingLabel.width
-                    verticalAlignment: Text.AlignVCenter
-                    text: i18n.tr("Host:")
+                    top: connectionSectionText.bottom
+                    left: parent.left
+                    leftMargin: units.gu(2)
+                    topMargin: units.gu(1)
+                    bottomMargin: units.gu(1)
                 }
-                TextField
+                height: hostNameSetting.height
+                width: authCodeSettingLabel.width
+                verticalAlignment: Text.AlignVCenter
+                text: i18n.tr("Host:")
+            }
+            TextField
+            {
+                id: hostNameSetting
+
+                property string qmlId: "hostNameSetting"
+                property string qmlProperty: "text"
+
+                anchors
                 {
-                    id: hostNameSetting
-                    anchors
-                    {
-                        left: hostNameSettingLabel.right
-                        verticalCenter: hostNameSettingLabel.verticalCenter
-                        leftMargin: units.gu(1)
-                    }
-                    maximumLength: 20
-                    verticalAlignment: Text.AlignVCenter
+                    left: hostNameSettingLabel.right
+                    verticalCenter: hostNameSettingLabel.verticalCenter
+                    leftMargin: units.gu(1)
                 }
-                Label
+                maximumLength: 20
+                verticalAlignment: Text.AlignVCenter
+            }
+            Label
+            {
+                id: portSettingLabel
+                anchors
                 {
-                    id: portSettingLabel
-                    anchors
-                    {
-                        top: hostNameSettingLabel.bottom
-                        left: parent.left
-                        leftMargin: units.gu(1)
-                        topMargin: units.gu(1)
-                        bottomMargin: units.gu(1)
-                    }
-                    height: portSetting.height
-                    width: authCodeSettingLabel.width
-                    verticalAlignment: Text.AlignVCenter
-                    text: i18n.tr("Port:")
+                    top: hostNameSettingLabel.bottom
+                    left: parent.left
+                    leftMargin: units.gu(2)
+                    topMargin: units.gu(1)
+                    bottomMargin: units.gu(1)
                 }
-                TextField
+                height: portSetting.height
+                width: authCodeSettingLabel.width
+                verticalAlignment: Text.AlignVCenter
+                text: i18n.tr("Port:")
+            }
+            TextField
+            {
+                id: portSetting
+
+                property string qmlId: "portSetting"
+                property string qmlProperty: "text"
+
+                anchors
                 {
-                    id: portSetting
-                    anchors
-                    {
-                        left: portSettingLabel.right
-                        verticalCenter: portSettingLabel.verticalCenter
-                        leftMargin: units.gu(1)
-                    }
-                    inputMask: "#####"
-                    verticalAlignment: Text.AlignVCenter
+                    left: portSettingLabel.right
+                    verticalCenter: portSettingLabel.verticalCenter
+                    leftMargin: units.gu(1)
                 }
-                Label
+                inputMask: "#####"
+                verticalAlignment: Text.AlignVCenter
+            }
+            Label
+            {
+                id: authCodeSettingLabel
+                anchors
                 {
-                    id: authCodeSettingLabel
-                    anchors
-                    {
-                        top: portSettingLabel.bottom
-                        left: parent.left
-                        leftMargin: units.gu(1)
-                        topMargin: units.gu(1)
-                        bottomMargin: units.gu(1)
-                    }
-                    height: authCodeSetting.height
-                    verticalAlignment: Text.AlignVCenter
-                    text: i18n.tr("Authentication code:")
+                    top: portSettingLabel.bottom
+                    left: parent.left
+                    leftMargin: units.gu(2)
+                    topMargin: units.gu(1)
+                    bottomMargin: units.gu(1)
                 }
-                TextField
+                height: authCodeSetting.height
+                verticalAlignment: Text.AlignVCenter
+                text: i18n.tr("Authentication code:")
+            }
+            TextField
+            {
+                id: authCodeSetting
+
+                property string qmlId: "authCodeSetting"
+                property string qmlProperty: "text"
+
+                anchors
                 {
-                    id: authCodeSetting
-                    anchors
-                    {
-                        left: authCodeSettingLabel.right
-                        verticalCenter: authCodeSettingLabel.verticalCenter
-                        leftMargin: units.gu(1)
-                    }
-                    inputMask: "#####"
-                    verticalAlignment: Text.AlignVCenter
+                    left: authCodeSettingLabel.right
+                    verticalCenter: authCodeSettingLabel.verticalCenter
+                    leftMargin: units.gu(1)
+                }
+                inputMask: "#####"
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            Label
+            {
+                id: cacheFolderLabel
+                anchors
+                {
+                    top: authCodeSetting.bottom
+                    left: parent.left
+                    leftMargin: units.gu(1)
+                    topMargin: units.gu(2)
+                    bottomMargin: units.gu(1)
+                }
+
+                verticalAlignment: Text.AlignVCenter
+                text: i18n.tr("<b>Cache folder:</b> ") + clementineProxy.getCacheFolder()
+                wrapMode: Text.WrapAnywhere
+            }
+
+            ButtonSvg
+            {
+                id: buttonSaveSettings
+                anchors
+                {
+                    top: cacheFolderLabel.bottom
+                    right: parent.right
+                    rightMargin: units.gu(3)
+                }
+                svg: "assets/download.svg"
+                iconHeight: units.gu(3)
+                iconWidth:  units.gu(3)
+                z: 10
+                onClicked:
+                {
+                    settingsPage.saveSettings();
                 }
             }
         }

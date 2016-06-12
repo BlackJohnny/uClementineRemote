@@ -17,6 +17,7 @@ set(
     modules/UClementineRemote/playlist.cpp
     modules/UClementineRemote/song.cpp
     modules/UClementineRemote/filedownloader.cpp
+    modules/UClementineRemote/artimageprovider.cpp
     ${PROTO_SRCS}
     ${PROTO_HDRS}
 )
