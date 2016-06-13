@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-12 23:31+0300\n"
+"POT-Creation-Date: 2016-06-13 13:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,54 +21,54 @@ msgstr ""
 msgid "Downloading"
 msgstr ""
 
-#: ../app/Main.qml:41 ../app/Main.qml:179 ../app/Main.qml:184
+#: ../app/Main.qml:42 ../app/Main.qml:191 ../app/Main.qml:197
 msgid "Connect"
 msgstr ""
 
-#: ../app/Main.qml:143
+#: ../app/Main.qml:152
 msgid "Waiting for the next file ..."
 msgstr ""
 
-#: ../app/Main.qml:157
+#: ../app/Main.qml:166
 msgid " in queue)"
 msgstr ""
 
-#: ../app/Main.qml:169
+#: ../app/Main.qml:179
 msgid "Connecting ..."
 msgstr ""
 
-#: ../app/Main.qml:174
+#: ../app/Main.qml:185
 msgid "Disconnect"
 msgstr ""
 
-#: ../app/Main.qml:313
+#: ../app/Main.qml:326
 msgid "Play lists"
 msgstr ""
 
-#: ../app/Main.qml:756
+#: ../app/Main.qml:769
 msgid "uClementineRemote settings"
 msgstr ""
 
-#: ../app/Main.qml:788
+#: ../app/Main.qml:801
 msgid "Connection"
 msgstr ""
 
-#: ../app/Main.qml:805
+#: ../app/Main.qml:818
 msgid "Host:"
 msgstr ""
 
-#: ../app/Main.qml:837
+#: ../app/Main.qml:850
 msgid "Port:"
 msgstr ""
 
-#: ../app/Main.qml:868
+#: ../app/Main.qml:881
 msgid "Authentication code:"
 msgstr ""
 
-#: ../app/Main.qml:900
+#: ../app/Main.qml:913
 msgid "<b>Cache folder:</b> "
 msgstr ""
 
-#: /home/black/repo/build-uClementineRemote-Desktop-Default/po/uClementineRemote.desktop.in.h:1
+#: /home/black/repo/uClementineRemote-build/po/uClementineRemote.desktop.in.h:1
 msgid "uClementineRemote"
 msgstr ""

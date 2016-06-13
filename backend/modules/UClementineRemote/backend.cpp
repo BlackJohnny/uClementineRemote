@@ -9,7 +9,6 @@
 #include "artimageprovider.h"
 
 #include "remotecontrolmessages.pb.h"
-QQmlEngine *xqmlEngine = NULL;
 
 void BackendPlugin::registerTypes(const char *uri)
 {

@@ -1,4 +1,5 @@
 import QtQuick 2.4
+import QtQuick.Controls 1.4
 import Ubuntu.Components 1.3
 import QtQuick.Window 2.2
 import Ubuntu.Content 1.3
@@ -88,6 +89,14 @@ MainView {
                 }
             }
 
+            BusyIndicator
+            {
+                id: busyIndicator
+                running: false
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
             ClementineProxy
             {
                 id: clementineProxy
@@ -166,21 +175,25 @@ MainView {
                     switch(connectionStatus)
                     {
                         case ClementineProxy.Connecting:
+                            busyIndicator.running = true;
                             actionConnect.text = i18n.tr("Connecting ...");
                             actionConnect.enabled = false;
                             break;
 
                         case ClementineProxy.Connected:
+                            busyIndicator.running = false;
                             actionConnect.text = i18n.tr("Disconnect");
                             actionConnect.enabled = true;
                             break;
 
                         case ClementineProxy.Disconnected:
+                            busyIndicator.running = false;
                             actionConnect.text = i18n.tr("Connect");
                             actionConnect.enabled = true;
                             break;
 
                         case ClementineProxy.ConnectionError:
+                            busyIndicator.running = false;
                             actionConnect.text = i18n.tr("Connect");
                             actionConnect.enabled = true;
                             break;
