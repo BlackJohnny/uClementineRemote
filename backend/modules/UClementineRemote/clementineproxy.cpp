@@ -319,6 +319,11 @@ QString ClementineProxy::getCacheFolder()
     return m_cacheFolder;
 }
 
+QString ClementineProxy::getCommunicationError()
+{
+    return m_clientSocket.errorString();
+}
+
 void ClementineProxy::error(QAbstractSocket::SocketError socketError)
 {
     emit connectionStatusChanged(ConnectionError);
@@ -364,7 +369,13 @@ void ClementineProxy::processMessage(pb::remote::Message message)
     //qDebug() << message.DebugString().c_str();
 
     if(message.version() != pb::remote::Message::default_instance().version())
-        emit communicationError("Invalid version player version!");
+    {
+        // TODO: better handle this case for UI feedback
+        // We cant recover from a protocol error
+        m_clientSocket.close();
+
+        emit connectionStatusChanged(Disconnected);
+    }
 
     switch (message.type())
     {

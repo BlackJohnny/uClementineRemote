@@ -36,6 +36,7 @@ public slots:
     bool isDownloadQueueEmpty();
     int downloadQueueSize();
     QString getCacheFolder();
+    QString getCommunicationError();
 
 private slots:
     void onConnected();
@@ -70,7 +71,6 @@ Q_SIGNALS:
     void updateSongPosition(int position);
     void updateDownloadProgress(int chunk, int chunks, QString songFileName);
     void updatePlayerStatus(PlayerStatus playerStatus);
-    void communicationError(QString error);
 
 public:
     explicit ClementineProxy(QObject *parent = 0);

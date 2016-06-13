@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the  package.
+# This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-13 13:23+0300\n"
+"POT-Creation-Date: 2016-06-13 21:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,54 +21,66 @@ msgstr ""
 msgid "Downloading"
 msgstr ""
 
-#: ../app/Main.qml:42 ../app/Main.qml:191 ../app/Main.qml:197
+#: ../app/Main.qml:47 ../app/Main.qml:208 ../app/Main.qml:214
 msgid "Connect"
 msgstr ""
 
-#: ../app/Main.qml:152
+#: ../app/Main.qml:135
+msgid "Loading songs ..."
+msgstr ""
+
+#: ../app/Main.qml:168
 msgid "Waiting for the next file ..."
 msgstr ""
 
-#: ../app/Main.qml:166
+#: ../app/Main.qml:182
 msgid " in queue)"
 msgstr ""
 
-#: ../app/Main.qml:179
+#: ../app/Main.qml:194
+msgid "Connecting to Clementine player ..."
+msgstr ""
+
+#: ../app/Main.qml:196
 msgid "Connecting ..."
 msgstr ""
 
-#: ../app/Main.qml:185
+#: ../app/Main.qml:201
+msgid "Loading playlists ..."
+msgstr ""
+
+#: ../app/Main.qml:202
 msgid "Disconnect"
 msgstr ""
 
-#: ../app/Main.qml:326
+#: ../app/Main.qml:345
 msgid "Play lists"
 msgstr ""
 
-#: ../app/Main.qml:769
+#: ../app/Main.qml:790
 msgid "uClementineRemote settings"
 msgstr ""
 
-#: ../app/Main.qml:801
+#: ../app/Main.qml:822
 msgid "Connection"
 msgstr ""
 
-#: ../app/Main.qml:818
+#: ../app/Main.qml:839
 msgid "Host:"
 msgstr ""
 
-#: ../app/Main.qml:850
+#: ../app/Main.qml:871
 msgid "Port:"
 msgstr ""
 
-#: ../app/Main.qml:881
+#: ../app/Main.qml:902
 msgid "Authentication code:"
 msgstr ""
 
-#: ../app/Main.qml:913
+#: ../app/Main.qml:934
 msgid "<b>Cache folder:</b> "
 msgstr ""
 
-#: /home/black/repo/uClementineRemote-build/po/uClementineRemote.desktop.in.h:1
+#: /home/black/repo/build-uClementineRemote-UbuntuSDK_for_armhf_GCC_ubuntu_sdk_15_04_vivid-Default/po/uClementineRemote.desktop.in.h:1
 msgid "uClementineRemote"
 msgstr ""

@@ -1,6 +1,6 @@
 import QtQuick 2.4
-import QtQuick.Controls 1.4
 import Ubuntu.Components 1.3
+import Ubuntu.Components.Popups 1.3
 import QtQuick.Window 2.2
 import Ubuntu.Content 1.3
 import QtQuick.LocalStorage 2.0
@@ -28,6 +28,11 @@ MainView {
         Page
         {
             id: mainPage
+
+            function statusMessage(message)
+            {
+                statusMessageArea.text = message;
+            }
 
             header: PageHeader
             {
@@ -89,12 +94,22 @@ MainView {
                 }
             }
 
-            BusyIndicator
+            ActivityIndicator
             {
                 id: busyIndicator
                 running: false
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
+            }
+            Label
+            {
+                id: statusMessageArea
+                anchors
+                {
+                    top: busyIndicator.bottom
+                    horizontalCenter: busyIndicator.horizontalCenter
+                }
+                visible: busyIndicator.running
             }
 
             ClementineProxy
@@ -117,6 +132,7 @@ MainView {
                         listModelPlayLists.append({"name": playLists[i].name, "id": playLists[i].id,
                                                       "isActive": playLists[i].isActive});
                     }
+                    mainPage.statusMessage(i18n.tr("Loading songs ..."));
                 }
 
                 onActiveSongChanged:
@@ -175,13 +191,14 @@ MainView {
                     switch(connectionStatus)
                     {
                         case ClementineProxy.Connecting:
+                            mainPage.statusMessage(i18n.tr("Connecting to Clementine player ..."));
                             busyIndicator.running = true;
                             actionConnect.text = i18n.tr("Connecting ...");
                             actionConnect.enabled = false;
                             break;
 
                         case ClementineProxy.Connected:
-                            busyIndicator.running = false;
+                            mainPage.statusMessage(i18n.tr("Loading playlists ..."));
                             actionConnect.text = i18n.tr("Disconnect");
                             actionConnect.enabled = true;
                             break;
@@ -193,7 +210,7 @@ MainView {
                             break;
 
                         case ClementineProxy.ConnectionError:
-                            busyIndicator.running = false;
+                            mainPage.statusMessage(clementineProxy.getCommunicationError());
                             actionConnect.text = i18n.tr("Connect");
                             actionConnect.enabled = true;
                             break;
@@ -229,6 +246,8 @@ MainView {
 
                 onPlayListSongs:
                 {
+                    // Stop the loading indicator
+                    busyIndicator.running = false;
                     setActivePlayList(playList);
                 }
 
@@ -453,6 +472,7 @@ MainView {
                         z: 10
                         onClicked:
                         {
+                            Haptics.play();
                             clementineProxy.playSong(listViewPlayList.currentItem.songIndex, listViewPlayList.currentItem.playListId);
                         }
                     }
@@ -473,6 +493,7 @@ MainView {
                         z: 10
                         onClicked:
                         {
+                            Haptics.play();
                             clementineProxy.downloadSong(listViewPlayList.currentItem.playListId, listViewPlayList.currentItem.songUrl);
                             clementineProxy.propDownloadQueueSize = clementineProxy.downloadQueueSize();
                             slideViewDownloader.visible = true;

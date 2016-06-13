@@ -106,6 +106,7 @@ Rectangle {
 
             onClicked:
             {
+                Haptics.play();
                 clickPrev();
             }
         }
@@ -142,6 +143,7 @@ Rectangle {
 
             onClicked:
             {
+                Haptics.play();
                 clickNext();
             }
         }
@@ -166,6 +168,7 @@ Rectangle {
                 else
                     buttonPlay.svg = "assets/play.svg";
 
+                Haptics.play();
                 playPause();
             }
         }
