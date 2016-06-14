@@ -1,17 +1,16 @@
 {
     "name": "@APP_ID@",
-    "description": "description of uClementineRemote",
+    "description": "uClementineRemote is a remote for Clementine music player",
     "architecture": "@CLICK_ARCH@",
     "title": "@APP_NAME@",
     "hooks": {
         "uClementineRemote": {
             "apparmor": "uClementineRemote.apparmor",
-            "desktop":  "uClementineRemote.desktop"
+            "desktop": "uClementineRemote.desktop",
+            "content-hub": "uClementineRemotecontenthub.json"
         }
     },
     "version": "0.1",
     "maintainer": "Ionut Negru <blackjohnny@gmail.com>",
-    "framework" : "ubuntu-sdk-15.04.5"
+    "framework": "ubuntu-sdk-15.04.5"
 }
-
-

@@ -29,26 +29,66 @@ Rectangle {
     id: root
     property alias title: songTitle.text
     property int songLength: 0
+    property alias art: artImage
 
     function setSongPosition(position)
     {
         songProgress.width = (songProgress.parent.width * position) / songLength;
     }
+    function onParentXChanged(parentX)
+    {
+        console.log(parentX)
+    }
+
+    Component.onCompleted: {
+        root.parent.onYChanged.connect(onParentXChanged);
+    }
 
     signal clickNext()
     signal clickPrev()
+    signal playPause()
 
     Rectangle
     {
-        id: row1
+        id: progressBar
+        border.width: 1
+        height: 4
+        border.color: UbuntuColors.orange
         anchors
         {
             left: parent.left
             right: parent.right
             top: parent.top
+            bottom: songControls.top
         }
 
-        height: parent.height - Screen.pixelDensity*0.5
+        Rectangle
+        {
+            id: songProgress
+            color: UbuntuColors.orange
+
+            anchors
+            {
+                left: parent.left
+                top: parent.top
+                bottom: parent.bottom
+            }
+            height: progressBar.height
+            width: 0
+        }
+    }
+
+    Rectangle
+    {
+        id: songControls
+        anchors
+        {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+
+        height: parent.height - progressBar.height
 
         ButtonSvg
         {
@@ -66,6 +106,7 @@ Rectangle {
 
             onClicked:
             {
+                Haptics.play();
                 clickPrev();
             }
         }
@@ -78,8 +119,10 @@ Rectangle {
                 right: buttonNext.left
                 top: parent.top
                 bottom: parent.bottom
+                leftMargin: units.gu(1)
+                rightMargin: units.gu(1)
             }
-
+            elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
         }
@@ -100,34 +143,55 @@ Rectangle {
 
             onClicked:
             {
+                Haptics.play();
                 clickNext();
             }
         }
-    }
 
-    Rectangle
-    {
-        id: row2
-        anchors
+        ButtonSvg
         {
-            left: parent.left
-            right: parent.right
-            top: row1.bottom
-            bottom: parent.bottom
-        }
-
-        Rectangle
-        {
-            id: songProgress
-            color: "#33ccff"
+            id: buttonPlay
             anchors
             {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
+                top: songTitle.bottom
+                horizontalCenter: parent.horizontalCenter
             }
-            height: row2.height
-            width: 0
+
+            svg: "assets/playpause.svg"
+            iconHeight: parent.height * 0.8
+            iconWidth:  parent.height * 0.8
+
+            onClicked:
+            {
+                Haptics.play();
+                playPause();
+            }
+        }
+        Image
+        {
+            id: artImage
+            smooth: true
+            anchors
+            {
+                top: buttonPlay.bottom
+                topMargin: units.gu(1)
+                horizontalCenter: parent.horizontalCenter
+            }
+
+            height:
+            {
+                if(sourceSize.height > sourceSize.width)
+                    return units.gu(30);
+                else
+                    return (width/sourceSize.width)*sourceSize.height;
+            }
+            width:
+            {
+                if(sourceSize.height > sourceSize.width)
+                    (height/sourceSize.height)*sourceSize.width;
+                else
+                    return units.gu(30);
+            }
         }
     }
 }

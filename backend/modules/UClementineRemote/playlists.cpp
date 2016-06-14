@@ -1,7 +1,9 @@
 #include "playlists.h"
+#include <QDebug>
 
 PlayLists::PlayLists(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_activePlayListId(-1)
 {
 }
 
@@ -11,13 +13,15 @@ PlayLists::~PlayLists()
 
 void PlayLists::addPlayList(const pb::remote::Playlist& playList)
 {
+    qDebug() << "Playlist: " << playList.name().c_str() << ", id: " << playList.id();
+
     // Create a new playlist object and store it
     PlayList* pl = new PlayList(playList);
     pl->setParent(parent());
     m_playLists[playList.id()] = pl;
 
-    // Push the event to GUI
-    Q_EMIT newPlayList(pl);
+    if(pl->isActive())
+        m_activePlayListId = pl->id();
 }
 
 PlayList* PlayLists::getPlayList(int id)

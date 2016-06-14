@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-05 20:48+0000\n"
+"POT-Creation-Date: 2016-06-14 16:55+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,78 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../app/Main.qml:24
+#: ../app/DownloadManager.qml:53
+msgid "Downloading"
+msgstr ""
+
+#: ../app/Main.qml:47 ../app/Main.qml:208 ../app/Main.qml:214
+msgid "Connect"
+msgstr ""
+
+#: ../app/Main.qml:60
+msgid "Quit"
+msgstr ""
+
+#: ../app/Main.qml:68
+msgid "Settings"
+msgstr ""
+
+#: ../app/Main.qml:135
+msgid "Loading songs ..."
+msgstr ""
+
+#: ../app/Main.qml:168
+msgid "Waiting for the next file ..."
+msgstr ""
+
+#: ../app/Main.qml:182
+msgid " in queue)"
+msgstr ""
+
+#: ../app/Main.qml:194
+msgid "Connecting to Clementine player ..."
+msgstr ""
+
+#: ../app/Main.qml:196
+msgid "Connecting ..."
+msgstr ""
+
+#: ../app/Main.qml:201
+msgid "Loading playlists ..."
+msgstr ""
+
+#: ../app/Main.qml:202
+msgid "Disconnect"
+msgstr ""
+
+#: ../app/Main.qml:345
+msgid "Play lists"
+msgstr ""
+
+#: ../app/Main.qml:790
+msgid "uClementineRemote settings"
+msgstr ""
+
+#: ../app/Main.qml:822
+msgid "Connection"
+msgstr ""
+
+#: ../app/Main.qml:839
+msgid "Host:"
+msgstr ""
+
+#: ../app/Main.qml:871
+msgid "Port:"
+msgstr ""
+
+#: ../app/Main.qml:902
+msgid "Authentication code:"
+msgstr ""
+
+#: ../app/Main.qml:934
+msgid "<b>Cache folder:</b> "
+msgstr ""
+
 #: /home/black/repo/build-uClementineRemote-UbuntuSDK_for_armhf_GCC_ubuntu_sdk_15_04_vivid-Default/po/uClementineRemote.desktop.in.h:1
 msgid "uClementineRemote"
-msgstr ""
-
-#: ../uClementine/app/Main.qml:21
-msgid "uClementine"
-msgstr ""
-
-#: ../uClementine/app/Main.qml:33
-msgid "Hello world.."
-msgstr ""
-
-#: ../uClementine/app/Main.qml:61
-msgid "Tap me!"
 msgstr ""

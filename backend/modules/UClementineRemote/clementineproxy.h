@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QMutex>
 #include <QSharedPointer>
+#include <QTimer>
+#include <QQuickImageProvider>
 
 #include "playlists.h"
 #include "playlist.h"
@@ -12,22 +14,35 @@
 
 #include "remotecontrolmessages.pb.h"
 
-class ClementineProxy : public QObject
+class ClementineProxy :
+        public QObject
 {
     Q_OBJECT
-    Q_PROPERTY( QString helloWorld READ helloWorld WRITE setHelloWorld NOTIFY helloWorldChanged )
     Q_PROPERTY( PlayLists* playLists WRITE setPlayListsItem )
     Q_PROPERTY( bool isConnected READ isConnected )
 
 public slots:
-    void connectRemote();
+    void connectRemote(QString host, int port, int authCode);
+    void disconnect();
     void playNext();
     void playPrev();
+    void playPause();
+    void playSong(int songIndex, int playListId);
+    void downloadSong(int playListId, QString songUrl);
+    void sendResponseSongOffer();
+    void requestPlayListSongs(int playListId);
+    void requestDownloadSong(int playListId, QString songUrl);
+    void requestPlayLists();
+    bool isDownloadQueueEmpty();
+    int downloadQueueSize();
+    QString getCacheFolder();
+    QString getCommunicationError();
 
 private slots:
     void onConnected();
     void error(QAbstractSocket::SocketError socketError);
     void readyRead();
+    void checkDownloadQueue();
 
 public:
     enum ConnectionStatus
@@ -40,22 +55,26 @@ public:
 
     Q_ENUMS(ConnectionStatus)
 
-signals:
+    enum PlayerStatus
+    {
+        Stopped,
+        Playing,
+        Paused
+    };
+
+    Q_ENUMS(PlayerStatus)
+
+Q_SIGNALS:
     void connectionStatusChanged(ConnectionStatus connectionStatus);
+    void updatePlayLists(QVariantList playLists);
     void activeSongChanged(Song* song); // this event might happen when there is no play list loaded
     void updateSongPosition(int position);
-
-    void communicationError(QString error);
-    //void newMessageReceived(pb::remote::Message newMessage);
+    void updateDownloadProgress(int chunk, int chunks, QString songFileName);
+    void updatePlayerStatus(PlayerStatus playerStatus);
 
 public:
     explicit ClementineProxy(QObject *parent = 0);
     ~ClementineProxy();
-
-
-
-Q_SIGNALS:
-    void helloWorldChanged();
 
 protected:
     void processMessage(pb::remote::Message message);
@@ -65,14 +84,14 @@ protected:
     void processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition);
     void processResponseClementineInfo(pb::remote::ResponseClementineInfo clementinInfo);
     void processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata);
+    void processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk);
 
 protected:
-    QString helloWorld() { return m_message; }
-    void setHelloWorld(QString msg) { m_message = msg; Q_EMIT helloWorldChanged(); }
     void setPlayListsItem(PlayLists* playListsItem) { m_playListsItem = playListsItem; }
     bool isConnected() { return m_clientSocket.isOpen(); }
     void play(bool playNext);
 
+    QTimer m_timer;
     Song* m_currentSong;
 
     QTcpSocket m_clientSocket;
@@ -80,8 +99,14 @@ protected:
     QByteArray readBuffer;
 
     PlayLists* m_playListsItem;
-    QList< QSharedPointer<PlayList> > m_playLists;
+    //QList< QSharedPointer<PlayList> > m_playLists;
     QMutex m_socketReadLock;
+
+    QString m_host;
+    int m_port;
+    int m_authCode;
+    QString m_cacheFolder;
+    QImage m_currentArt;
 };
 
 #endif // CLEMENTINEPROXY_H

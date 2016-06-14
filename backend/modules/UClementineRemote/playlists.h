@@ -11,13 +11,13 @@ class PlayLists : public QObject
 {
     Q_OBJECT
     Q_PROPERTY( int size READ size )
+    Q_PROPERTY( int activePlayListId READ activePlayListId)
 
 public:
     explicit PlayLists(QObject *parent = 0);
     ~PlayLists();
 
 Q_SIGNALS:
-    void newPlayList(PlayList* playList);
     void playListSongs(PlayList* playList);
     void activePlayListChanged(PlayList* playList);
     void clearPlaylists();
@@ -28,11 +28,13 @@ protected:
 public:
     void addPlayList(const pb::remote::Playlist& playList);
     void serverSetActivePlayList(int id);
+    int activePlayListId() { return m_activePlayListId; }
 
     PlayList* getPlayList(int id);
 
 private:
     QMap<int, PlayList*> m_playLists;
+    int m_activePlayListId;
 };
 
 #endif // PLAYLISTS_H
