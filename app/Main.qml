@@ -43,7 +43,7 @@ MainView {
                     Action
                     {
                         id: actionConnect
-                        iconName: "contact"
+                        iconName: "switch"
                         text: i18n.tr("Connect")
 
                         onTriggered:
@@ -56,8 +56,8 @@ MainView {
                     },
                     Action
                     {
-                        iconName: "quit"
-                        text: "Quit"
+                        iconName: "system-shutdown"
+                        text: i18n.tr("Quit")
                         onTriggered: Qt.quit();
                     }
                 ]
@@ -65,7 +65,7 @@ MainView {
                     Action
                     {
                         iconName: "settings"
-                        text: "First"
+                        text: i18n.tr("Settings")
                         onTriggered:
                         {
                             pageStack.push(settingsPage);
@@ -933,25 +933,6 @@ MainView {
                 verticalAlignment: Text.AlignVCenter
                 text: i18n.tr("<b>Cache folder:</b> ") + clementineProxy.getCacheFolder()
                 wrapMode: Text.WrapAnywhere
-            }
-
-            ButtonSvg
-            {
-                id: buttonSaveSettings
-                anchors
-                {
-                    top: cacheFolderLabel.bottom
-                    right: parent.right
-                    rightMargin: units.gu(3)
-                }
-                svg: "assets/download.svg"
-                iconHeight: units.gu(3)
-                iconWidth:  units.gu(3)
-                z: 10
-                onClicked:
-                {
-                    settingsPage.saveSettings();
-                }
             }
         }
     }

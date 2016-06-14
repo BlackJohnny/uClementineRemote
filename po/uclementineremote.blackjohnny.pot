@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-13 21:24+0000\n"
+"POT-Creation-Date: 2016-06-14 16:55+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,6 +23,14 @@ msgstr ""
 
 #: ../app/Main.qml:47 ../app/Main.qml:208 ../app/Main.qml:214
 msgid "Connect"
+msgstr ""
+
+#: ../app/Main.qml:60
+msgid "Quit"
+msgstr ""
+
+#: ../app/Main.qml:68
+msgid "Settings"
 msgstr ""
 
 #: ../app/Main.qml:135

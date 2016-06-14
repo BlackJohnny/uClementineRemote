@@ -1,6 +1,6 @@
 [Desktop Entry]
 _Name=uClementineRemote
-Comment=My project description
+Comment=A simple remote for the Clementine music player
 Exec=@EXEC@
 Icon=@ICON@
 Terminal=false

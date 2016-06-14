@@ -157,17 +157,12 @@ Rectangle {
                 horizontalCenter: parent.horizontalCenter
             }
 
-            svg: "assets/play.svg"
+            svg: "assets/playpause.svg"
             iconHeight: parent.height * 0.8
             iconWidth:  parent.height * 0.8
 
             onClicked:
             {
-                if(buttonPlay.svg.toString().indexOf("assets/play.svg") != -1)
-                    buttonPlay.svg = "assets/pause.svg";
-                else
-                    buttonPlay.svg = "assets/play.svg";
-
                 Haptics.play();
                 playPause();
             }
