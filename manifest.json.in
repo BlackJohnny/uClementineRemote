@@ -10,7 +10,7 @@
             "content-hub": "uClementineRemotecontenthub.json"
         }
     },
-    "version": "0.1",
+    "version": "0.1.1",
     "maintainer": "Ionut Negru <blackjohnny@gmail.com>",
     "framework": "ubuntu-sdk-15.04.5"
 }
