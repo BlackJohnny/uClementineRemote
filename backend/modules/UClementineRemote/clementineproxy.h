@@ -33,6 +33,7 @@ public slots:
     void requestPlayListSongs(int playListId);
     void requestDownloadSong(int playListId, QString songUrl);
     void requestPlayLists();
+    void search(QString query);
     bool isDownloadQueueEmpty();
     int downloadQueueSize();
     QString getCacheFolder();
@@ -77,14 +78,15 @@ public:
     ~ClementineProxy();
 
 protected:
-    void processMessage(pb::remote::Message message);
-    void processResponsePlaylists(pb::remote::ResponsePlaylists playLists);
-    void processResponsePlaylistSongs(pb::remote::ResponsePlaylistSongs playListSongs);
-    void processResponseActiveChanged(pb::remote::ResponseActiveChanged activePlaylistChanged);
-    void processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition);
-    void processResponseClementineInfo(pb::remote::ResponseClementineInfo clementinInfo);
-    void processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata);
-    void processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk);
+    void processMessage(const pb::remote::Message& message);
+    void processResponsePlaylists(const pb::remote::ResponsePlaylists& playLists);
+    void processResponsePlaylistSongs(const pb::remote::ResponsePlaylistSongs& playListSongs);
+    void processResponseActiveChanged(const pb::remote::ResponseActiveChanged& activePlaylistChanged);
+    void processResponseUpdateTrackPosition(const pb::remote::ResponseUpdateTrackPosition& updateTrackPosition);
+    void processResponseClementineInfo(const pb::remote::ResponseClementineInfo& clementinInfo);
+    void processResponseCurrentMetadata(const pb::remote::ResponseCurrentMetadata& currentMetadata);
+    void processResponseSongFileChunk(const pb::remote::ResponseSongFileChunk& songFileChunk);
+    void processResponseGlobalSearch(const pb::remote::ResponseGlobalSearch& responseGlobalSearch);
 
 protected:
     void setPlayListsItem(PlayLists* playListsItem) { m_playListsItem = playListsItem; }

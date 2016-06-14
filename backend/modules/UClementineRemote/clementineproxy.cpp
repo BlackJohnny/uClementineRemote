@@ -266,6 +266,31 @@ void ClementineProxy::playPause()
         m_clientSocket.flush();
     }
 }
+
+void ClementineProxy::search(QString query)
+{
+    qDebug() << "Search for: " << query;
+    if(m_clientSocket.isOpen())
+    {
+        pb::remote::Message msg;
+        msg.set_type(pb::remote::GLOBAL_SEARCH);
+        msg.set_version(pb::remote::Message::default_instance().version());
+
+        pb::remote::RequestGlobalSearch* requestGlobalSearch = new pb::remote::RequestGlobalSearch();
+        requestGlobalSearch->set_query(query.toStdString().c_str(), query.size());
+        msg.set_allocated_request_global_search(requestGlobalSearch);
+
+        uint32_t msgSize = msg.ByteSize();
+        uint8_t msgData[msgSize];
+        msg.SerializeToArray(msgData, msgSize);
+
+        uint32_t beSize = qToBigEndian(msgSize);
+        m_clientSocket.write((const char*)&beSize, 4);
+        m_clientSocket.write((const char*)msgData, msgSize);
+        m_clientSocket.flush();
+    }
+}
+
 void ClementineProxy::onConnected()
 {
     qDebug() << "Connected";
@@ -364,7 +389,7 @@ void ClementineProxy::readyRead()
     }
 }
 
-void ClementineProxy::processMessage(pb::remote::Message message)
+void ClementineProxy::processMessage(const pb::remote::Message& message)
 {
     //qDebug() << message.DebugString().c_str();
 
@@ -446,18 +471,27 @@ void ClementineProxy::processMessage(pb::remote::Message message)
         case pb::remote::DOWNLOAD_QUEUE_EMPTY:
             qDebug() << "New message: DOWNLOAD_QUEUE_EMPTY";
             break;
-
+        case pb::remote::FIRST_DATA_SENT_COMPLETE:
+            qDebug() << "New message: FIRST_DATA_SENT_COMPLETE";
+            break;
+        case pb::remote::GLOBAL_SEARCH_RESULT:
+            qDebug() << "New message: GLOBAL_SEARCH_RESULT";
+            processResponseGlobalSearch(message.response_global_search());
+            break;
+        case pb::remote::GLOBAL_SEARCH_STATUS:
+            qDebug() << "New message: GLOBAL_SEARCH_STATUS";
+            break;
         default:
             qDebug() << "New message: Unknown message type" << message.type();
             break;
     }
 }
 
-void ClementineProxy::processResponseClementineInfo(pb::remote::ResponseClementineInfo clementineInfo)
+void ClementineProxy::processResponseClementineInfo(const pb::remote::ResponseClementineInfo& clementineInfo)
 {
 }
 
-void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrentMetadata currentMetadata)
+void ClementineProxy::processResponseCurrentMetadata(const pb::remote::ResponseCurrentMetadata& currentMetadata)
 {
     if(m_currentSong)
         delete m_currentSong;
@@ -469,7 +503,7 @@ void ClementineProxy::processResponseCurrentMetadata(pb::remote::ResponseCurrent
     emit activeSongChanged(m_currentSong);
 }
 
-void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileChunk songFileChunk)
+void ClementineProxy::processResponseSongFileChunk(const pb::remote::ResponseSongFileChunk& songFileChunk)
 {
     FileDownloader::DownloadStatus downloadStatus = FileDownloader::saveFileChunk(songFileChunk.file_number(), songFileChunk.chunk_number(), songFileChunk.chunk_count(), songFileChunk.data().c_str(), songFileChunk.data().size(), songFileChunk.song_metadata());
 
@@ -485,7 +519,7 @@ void ClementineProxy::processResponseSongFileChunk(pb::remote::ResponseSongFileC
     }
 }
 
-void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists playLists)
+void ClementineProxy::processResponsePlaylists(const pb::remote::ResponsePlaylists& playLists)
 {
     if(!m_playListsItem)
         return;
@@ -509,7 +543,7 @@ void ClementineProxy::processResponsePlaylists(pb::remote::ResponsePlaylists pla
     qDebug() << "update playlists";
 }
 
-void ClementineProxy::processResponsePlaylistSongs(pb::remote::ResponsePlaylistSongs playListSongs)
+void ClementineProxy::processResponsePlaylistSongs(const pb::remote::ResponsePlaylistSongs& playListSongs)
 {
     if(!m_playListsItem)
         return;
@@ -533,7 +567,7 @@ void ClementineProxy::processResponsePlaylistSongs(pb::remote::ResponsePlaylistS
         emit m_playListsItem->playListSongs(pl);
 }
 
-void ClementineProxy::processResponseActiveChanged(pb::remote::ResponseActiveChanged activePlaylistChanged)
+void ClementineProxy::processResponseActiveChanged(const pb::remote::ResponseActiveChanged& activePlaylistChanged)
 {
     if(!m_playListsItem)
         return;
@@ -541,7 +575,12 @@ void ClementineProxy::processResponseActiveChanged(pb::remote::ResponseActiveCha
     m_playListsItem->serverSetActivePlayList(activePlaylistChanged.id());
 }
 
-void ClementineProxy::processResponseUpdateTrackPosition(pb::remote::ResponseUpdateTrackPosition updateTrackPosition)
+void ClementineProxy::processResponseUpdateTrackPosition(const pb::remote::ResponseUpdateTrackPosition& updateTrackPosition)
 {
     emit updateSongPosition(updateTrackPosition.position());
+}
+
+void ClementineProxy::processResponseGlobalSearch(const pb::remote::ResponseGlobalSearch& responseGlobalSearch)
+{
+    qDebug() << responseGlobalSearch.DebugString().c_str();
 }

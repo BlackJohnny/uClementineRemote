@@ -74,7 +74,7 @@ MainView {
                     Action
                     {
                         iconSource: "assets/playlists.svg"
-                        text: "Play lists"
+                        text: i18n.tr("Play lists")
                         onTriggered:
                         {
                             slideViewPlayLists.isVisible() ? slideViewPlayLists.hideMenu() : slideViewPlayLists.showMenu();
@@ -83,7 +83,11 @@ MainView {
                     Action
                     {
                         iconName: "search"
-                        text: "Second"
+                        text: i18n.tr("Search")
+                        onTriggered:
+                        {
+                            clementineProxy.search("acele");
+                        }
                     }
                 ]
 
