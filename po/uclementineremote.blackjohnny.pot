@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-14 22:09+0300\n"
+"POT-Creation-Date: 2016-06-16 00:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,76 +21,80 @@ msgstr ""
 msgid "Downloading"
 msgstr ""
 
-#: ../app/Main.qml:47 ../app/Main.qml:212 ../app/Main.qml:218
+#: ../app/Main.qml:46 ../app/Main.qml:211 ../app/Main.qml:217
 msgid "Connect"
 msgstr ""
 
-#: ../app/Main.qml:60
+#: ../app/Main.qml:59
 msgid "Quit"
 msgstr ""
 
-#: ../app/Main.qml:68
+#: ../app/Main.qml:67
 msgid "Settings"
 msgstr ""
 
-#: ../app/Main.qml:77 ../app/Main.qml:349
+#: ../app/Main.qml:76 ../app/Main.qml:348
 msgid "Play lists"
 msgstr ""
 
-#: ../app/Main.qml:86
+#: ../app/Main.qml:85
 msgid "Search"
 msgstr ""
 
-#: ../app/Main.qml:139
+#: ../app/Main.qml:138
 msgid "Loading songs ..."
 msgstr ""
 
-#: ../app/Main.qml:172
+#: ../app/Main.qml:171
 msgid "Waiting for the next file ..."
 msgstr ""
 
-#: ../app/Main.qml:186
+#: ../app/Main.qml:185
 msgid " in queue)"
 msgstr ""
 
-#: ../app/Main.qml:198
+#: ../app/Main.qml:197
 msgid "Connecting to Clementine player ..."
 msgstr ""
 
-#: ../app/Main.qml:200
+#: ../app/Main.qml:199
 msgid "Connecting ..."
 msgstr ""
 
-#: ../app/Main.qml:205
+#: ../app/Main.qml:204
 msgid "Loading playlists ..."
 msgstr ""
 
-#: ../app/Main.qml:206
+#: ../app/Main.qml:205
 msgid "Disconnect"
 msgstr ""
 
-#: ../app/Main.qml:794
+#: ../app/Main.qml:800
 msgid "uClementineRemote settings"
 msgstr ""
 
-#: ../app/Main.qml:826
+#: ../app/Main.qml:832
 msgid "Connection"
 msgstr ""
 
-#: ../app/Main.qml:843
+#: ../app/Main.qml:849
 msgid "Host:"
 msgstr ""
 
-#: ../app/Main.qml:875
+#: ../app/Main.qml:881
 msgid "Port:"
 msgstr ""
 
-#: ../app/Main.qml:906
+#: ../app/Main.qml:912
 msgid "Authentication code:"
 msgstr ""
 
-#: ../app/Main.qml:938
+#: ../app/Main.qml:944
 msgid "<b>Cache folder:</b> "
+msgstr ""
+
+#: ../app/SearchPage.qml:11
+msgid "uClementineRemote search"
 msgstr ""
 
 #: /home/black/repo/build-uClementineRemote-Desktop-Default/po/uClementineRemote.desktop.in.h:1

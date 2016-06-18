@@ -34,7 +34,10 @@ class Song : public QObject
 public:
     explicit Song(QObject *parent = 0);
     Song(const pb::remote::SongMetadata& songData);
+    Song(const Song& copyFrom);
     ~Song();
+
+    Song& operator=(const Song& copyFrom);
 
 public:
 
@@ -106,5 +109,7 @@ public:
     SongType m_type;
 
 };
+
+Q_DECLARE_METATYPE(Song)
 
 #endif // SONG_H

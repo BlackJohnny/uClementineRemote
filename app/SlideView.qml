@@ -95,18 +95,16 @@ Item {
     */
     function showMenu()
     {
-        console.log(mouseArea.x);
         menuVisible = true;
-        signalVisible();
+        //signalVisible();
     }
 
     /*! Hides the menu.
     */
     function hideMenu()
     {
-        console.log(mouseArea.x);
         menuVisible = false;
-        signalVisible();
+        //signalVisible();
     }
 
     function isVisible()

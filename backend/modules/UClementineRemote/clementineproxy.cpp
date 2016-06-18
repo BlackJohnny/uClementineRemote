@@ -583,4 +583,13 @@ void ClementineProxy::processResponseUpdateTrackPosition(const pb::remote::Respo
 void ClementineProxy::processResponseGlobalSearch(const pb::remote::ResponseGlobalSearch& responseGlobalSearch)
 {
     qDebug() << responseGlobalSearch.DebugString().c_str();
+
+    QVariantList songsList;
+    for(int i = 0; i < responseGlobalSearch.song_metadata_size(); i ++)
+    {
+        Song song(responseGlobalSearch.song_metadata(i));
+        songsList.append(QVariant::fromValue(song));
+    }
+
+    emit searchResultsAvailable(responseGlobalSearch.id(), responseGlobalSearch.search_provider().c_str(), songsList);
 }

@@ -72,6 +72,7 @@ Q_SIGNALS:
     void updateSongPosition(int position);
     void updateDownloadProgress(int chunk, int chunks, QString songFileName);
     void updatePlayerStatus(PlayerStatus playerStatus);
+    void searchResultsAvailable(int id, QString provider, QVariantList songs);
 
 public:
     explicit ClementineProxy(QObject *parent = 0);

@@ -18,6 +18,7 @@ void BackendPlugin::registerTypes(const char *uri)
     qmlRegisterType<PlayLists>(uri, 1, 0, "PlayLists");
     qmlRegisterType<PlayList>(uri, 1, 0, "PlayList");
     qmlRegisterType<Song>(uri, 1, 0, "Song");
+    qRegisterMetaType<Song>("Song");
 }
 
 void BackendPlugin::initializeEngine(QQmlEngine *engine, const char *uri)

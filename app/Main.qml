@@ -1,6 +1,5 @@
 import QtQuick 2.4
 import Ubuntu.Components 1.3
-import Ubuntu.Components.Popups 1.3
 import QtQuick.Window 2.2
 import Ubuntu.Content 1.3
 import QtQuick.LocalStorage 2.0
@@ -86,7 +85,7 @@ MainView {
                         text: i18n.tr("Search")
                         onTriggered:
                         {
-                            clementineProxy.search("acele");
+                            pageStack.push(Qt.resolvedUrl("SearchPage.qml"));
                         }
                     }
                 ]
@@ -324,12 +323,12 @@ MainView {
 
                 onShown:
                 {
-                    z = 100;
+                    //z = 100;
                 }
 
                 onHidden:
                 {
-                    z = 0;
+                    //z = 0;
                 }
 
                 Text
@@ -389,8 +388,15 @@ MainView {
                         {
                             id: label
                             text: name
-                            anchors.verticalCenter: parent.verticalCenter
+
+                            anchors
+                            {
+                                left: parent.left
+                                right: parent.right
+                                verticalCenter: parent.verticalCenter
+                            }
                             font.pixelSize: FontUtils.modularScale("small") * units.dp(20)
+                            elide: Text.ElideRight
                         }
                         MouseArea
                         {
