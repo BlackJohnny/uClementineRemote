@@ -1,0 +1,94 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-06-14 16:55+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../app/DownloadManager.qml:53
+msgid "Downloading"
+msgstr "Téléchargement"
+
+#: ../app/Main.qml:47 ../app/Main.qml:208 ../app/Main.qml:214
+msgid "Connect"
+msgstr "Connecter"
+
+#: ../app/Main.qml:60
+msgid "Quit"
+msgstr "Quitter"
+
+#: ../app/Main.qml:68
+msgid "Settings"
+msgstr "Paramètres"
+
+#: ../app/Main.qml:135
+msgid "Loading songs ..."
+msgstr "Chargement des morceaux..."
+
+#: ../app/Main.qml:168
+msgid "Waiting for the next file ..."
+msgstr "En attente du fichier suivant..."
+
+#: ../app/Main.qml:182
+msgid " in queue)"
+msgstr " dans la file d'attente)"
+
+#: ../app/Main.qml:194
+msgid "Connecting to Clementine player ..."
+msgstr "Connexion au lecteur Clementine..."
+
+#: ../app/Main.qml:196
+msgid "Connecting ..."
+msgstr "Connexion..."
+
+#: ../app/Main.qml:201
+msgid "Loading playlists ..."
+msgstr "Chargement des listes de lecture..."
+
+#: ../app/Main.qml:202
+msgid "Disconnect"
+msgstr "Déconnecter"
+
+#: ../app/Main.qml:345
+msgid "Play lists"
+msgstr "Lire les listes"
+
+#: ../app/Main.qml:790
+msgid "uClementineRemote settings"
+msgstr "Paramètres de uClementineRemote"
+
+#: ../app/Main.qml:822
+msgid "Connection"
+msgstr "Connexion"
+
+#: ../app/Main.qml:839
+msgid "Host:"
+msgstr "Hôte :"
+
+#: ../app/Main.qml:871
+msgid "Port:"
+msgstr "Port :"
+
+#: ../app/Main.qml:902
+msgid "Authentication code:"
+msgstr "Code d'authentification :"
+
+#: ../app/Main.qml:934
+msgid "<b>Cache folder:</b> "
+msgstr "<b>Dossier cache :</b> "
+
+#: /home/black/repo/build-uClementineRemote-UbuntuSDK_for_armhf_GCC_ubuntu_sdk_15_04_vivid-Default/po/uClementineRemote.desktop.in.h:1
+msgid "uClementineRemote"
+msgstr "uClementineRemote"
